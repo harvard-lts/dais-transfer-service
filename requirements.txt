@@ -1,0 +1,14 @@
+attrs==21.4.0
+docopt==0.6.2
+iniconfig==1.1.1
+itsdangerous==1.1.0
+packaging==21.3
+pluggy==0.13.1
+py==1.11.0
+py-healthcheck==1.10.1
+pyparsing==3.0.8
+pytest==6.2.2
+six==1.16.0
+stomp.py==7.0.0
+structlog==20.1.0
+toml==0.10.2
