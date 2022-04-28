@@ -1,0 +1,21 @@
+# `docker-compose -f docker-compose-local.yml up -d --build --force-recreate`
+
+version: '3.9'
+
+services:
+
+  hdc3a-transfer-service:
+    container_name: 'hdc3a-transfer-service'
+    build:
+      context: '.'
+      dockerfile: 'Dockerfile'
+    tty: true
+    volumes:
+      # App
+      - './:/home/appuser'
+      # Logs
+      - './logs:/home/appuser/logs'
+    env_file:
+      - '.env'
+    ports:
+      - "10584:8443"
