@@ -1,6 +1,7 @@
 import json, time, traceback, stomp, sys, os, logging
 import mqutils
 import mqexception
+import transfer_service, transfer_ready_validation
 
 # Subscription id is unique to the subscription in this case there is only one subscription per connection
 _sub_id = 1
@@ -13,11 +14,10 @@ logging.basicConfig(filename=logfile, level=loglevel)
 
 def subscribe_to_listener(connection_params):
     logging.debug("************************ MQUTILS MQLISTENER - CONNECT_AND_SUBSCRIBE *******************************")
-    print("************************ MQUTILS MQLISTENER - CONNECT_AND_SUBSCRIBE *******************************")
     global _reconnect_attempts
     _reconnect_attempts = _reconnect_attempts + 1
     if _reconnect_attempts <= _max_attempts:
-        # TODO: Retry timer with exponential backoff
+        
         time.sleep(1)
         try:
             if not connection_params.conn.is_connected():
@@ -47,28 +47,41 @@ class MqListener(stomp.ConnectionListener):
 
     def on_error(self, frame):
         logging.debug('received an error "%s"' % frame.body)
-        print('received an error "%s"' % frame.body)
-
+        
     def on_message(self, frame):
         logging.debug("************************ MQUTILS MQLISTENER - ON_MESSAGE *******************************")
-        print("************************ MQUTILS MQLISTENER - ON_MESSAGE *******************************")
         headers, body = frame.headers, frame.body
         logging.debug('received a message headers "%s"' % headers)
         logging.debug('message body "%s"' % body)
-
+        
         self.message_id = headers.get('message-id')
         try: 
             self.message_data = json.loads(body)
         except json.decoder.JSONDecodeError: 
             raise mqexception.MQException("Incorrect formatting of message detected.  Required JSON but received {} ".format(body))
         
-        #TODO transfer data
-        
         self.connection_params.conn.ack(self.message_id, 1)
-
         #TODO- Handle
         logging.debug(' message_data {}'.format(self.message_data))
         logging.debug(' message_id {}'.format(self.message_id))
+        
+        #Do not do the validation and transfer if dry_run is set
+        if ("dry_run" in self.message_data):
+            return 
+        #Validate json
+        try: 
+            transfer_ready_validation.validate_json_schema(self.message_data)
+        
+            #Transfer data
+            s3_bucket_name = self.message_data['s3_bucket_name']
+            s3_path = self.message_data['s3_path'] 
+            dropbox_dir = self.message_data['destination_path']
+            logging.debug(' TRANSFERRING DATA {} to {}'.format(s3_path, dropbox_dir))
+            transfer_service.transfer_data(s3_bucket_name, s3_path, dropbox_dir)
+        except Exception as e:
+            #TODOSend email message
+            logging.exception("validation failed so transfer was not completed")
+    
 
     def on_disconnected(self):
         logging.debug('disconnected! reconnecting...')

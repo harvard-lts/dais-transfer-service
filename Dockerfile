@@ -15,9 +15,10 @@ RUN apt-get update && apt-get install -y libpq-dev gcc python-dev supervisor ngi
           -out /etc/nginx/ssl/nginx.cert && \
   chmod -R 755 /etc/nginx/ssl/ && \
   pip install --upgrade pip && \
-  pip install --upgrade --force-reinstall -r /tmp/requirements.txt -i https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/
-
-RUN useradd -u 55020 --create-home appuser
+  pip install gunicorn && \
+  pip install --upgrade --force-reinstall -r /tmp/requirements.txt -i https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/ &&\
+  groupadd -r -g 55020 appuser && \
+  useradd -u 55020 -g 55020 --create-home appuser
 
 # Supervisor to run and manage multiple apps in the same container
 ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf

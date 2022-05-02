@@ -11,7 +11,7 @@ A service to transfer data from S3 to the dropbox
 docker-compose -f docker-compose-local.yml up -d --build --force-recreate
 ```
 
-3. Local Healthcheck: https://localhost:10581/healthcheck
+Local Healthcheck: https://localhost:10584/healthcheck
 
 ## Testing
 Note, testing uses its own queues so they will not interfere with the queues used by the actual program.
