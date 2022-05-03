@@ -68,18 +68,20 @@ class MqListener(stomp.ConnectionListener):
         #Do not do the validation and transfer if dry_run is set
         if ("dry_run" in self.message_data):
             return 
-        #Validate json
+        
+        dropbox_dir = self.message_data['destination_path']
+        
         try: 
+            #Validate json
             transfer_ready_validation.validate_json_schema(self.message_data)
         
             #Transfer data
-            s3_bucket_name = self.message_data['s3_bucket_name']
-            s3_path = self.message_data['s3_path'] 
-            dropbox_dir = self.message_data['destination_path']
-            logging.debug(' TRANSFERRING DATA {} to {}'.format(s3_path, dropbox_dir))
-            transfer_service.transfer_data(s3_bucket_name, s3_path, dropbox_dir)
+            logging.debug(' TRANSFERRING DATA {} to {}'.format(self.message_data['s3_path'], self.message_data['destination_path']))
+            transfer_service.transfer_data(self.message_data)
         except Exception as e:
-            #TODOSend email message
+            transfer_status = mqutils.TransferStatus(self.message_data["package_id"], "failure", self.message_data['destination_path'])
+            mqutils.notify_transfer_status_message(transfer_status)
+            #TODO Send email message
             logging.exception("validation failed so transfer was not completed")
     
 

@@ -1,20 +1,47 @@
 import boto3, os, os.path, logging
 import transfer_ready_validation
+from mqresources import mqutils
+from botocore.exceptions import ClientError
 
 s3 = boto3.resource('s3') 
 logfile=os.getenv('LOGFILE_PATH', 'hdc3a_transfer_service')
 loglevel=os.getenv('LOGLEVEL', 'WARNING')
 logging.basicConfig(filename=logfile, level=loglevel)
 
-def transfer_data(s3_bucket_name, s3_path, dropbox_dir):
-    
+def transfer_data(message_data):
+    s3_bucket_name = message_data['s3_bucket_name']
+    s3_path = message_data['s3_path'] 
+    dest_path = message_data['destination_path']
+   
+    if not path_exists(s3_bucket_name, s3_path):
+       #TODO Make this a customized exception
+        raise Exception("The path {} does not exists in bucket {}.".format(s3_path, s3_bucket_name))  
+           
     #Transfer
-    perform_transfer(s3_bucket_name, s3_path, dropbox_dir)
+    perform_transfer(s3_bucket_name, s3_path, dest_path)
     
     #TODO Validate transfer hash
+    transfer_succeeded=validate_transfer()
+    if not transfer_succeeded:
+       
+        #TODO Make this a customized exception
+        raise Exception("Transfer failed")
     
+    #TODO Notify transfer success
+    transfer_status = mqutils.TransferStatus(message_data["package_id"], "success", dest_path)
+    mqutils.notify_transfer_status_message(transfer_status)
+            
     #TODO Cleanup s3
-    
+    cleanup_s3()
+
+def path_exists(s3_bucket, s3_path):
+    try:
+        s3_connect = boto3.client('s3', "us-east-1")
+        s3_connect.head_object(Bucket=s3_bucket, Key=s3_path)
+        return True
+    except ClientError as e:
+        return False
+       
 def perform_transfer(s3_bucket_name, s3_path, dropbox_dir):
     """
     Download the contents of a folder directory
@@ -31,4 +58,10 @@ def perform_transfer(s3_bucket_name, s3_path, dropbox_dir):
         if obj.key[-1] == '/':
             continue
         bucket.download_file(obj.key, target)
+        
+def validate_transfer():
+    return True
+
+def cleanup_s3():
+    return True
         

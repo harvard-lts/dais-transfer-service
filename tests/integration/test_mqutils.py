@@ -13,7 +13,8 @@ def test_notification():
     '''Sends a status message to the transfer queue and verifies that it made it'''
     transfer_queue="/queue/dropbox-transfer-status-testing"
     #Send the message
-    message = mqutils.notify_transfer_status_message(transfer_queue)
+    transfer_status = mqutils.TransferStatus("12345", "Dataverse", "success", "/path/to/dropbox", {"original_queue" : transfer_queue, "retry_count":0})
+    message = mqutils.notify_transfer_status_message(transfer_status,transfer_queue)
     assert type(message) is str
     messagedict = json.loads(message)
     
