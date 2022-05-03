@@ -131,3 +131,7 @@ dmypy.json
 .project
 .bash_history
 .py*
+
+#test dropbox data
+local/dropbox/*
+!local/dropbox/.keep
