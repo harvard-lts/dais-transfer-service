@@ -16,7 +16,6 @@ class ConnectionParams:
         
 def get_transfer_mq_connection(queue=None):
     logging.debug("************************ MQUTILS - GET_TRANSFER_MQ_CONNECTION *******************************")
-    print("************************ MQUTILS - GET_TRANSFER_MQ_CONNECTION *******************************")
     try:
         host = os.getenv('TRANSFER_MQ_HOST')
         port = os.getenv('TRANSFER_MQ_PORT')
@@ -27,7 +26,6 @@ def get_transfer_mq_connection(queue=None):
         else:
             transfer_queue = queue
             
-        print("Connection for {}".format(transfer_queue))
         conn = stomp.Connection([(host, port)], heartbeats=(40000, 40000), keepalive=True)
         conn.set_ssl([(host, port)])
         connection_params = ConnectionParams(conn, transfer_queue, host, port, user, password)
@@ -40,7 +38,6 @@ def get_transfer_mq_connection(queue=None):
 def notify_transfer_status_message(queue=None):
     '''Creates a json message to notify the DIMS that the transfer has finished'''
     logging.debug("************************ MQUTILS - NOTIFY_TRANSFER_STATUS_MESSAGE *******************************")
-    print("************************ MQUTILS - NOTIFY_TRANSFER_STATUS_MESSAGE *******************************")
     message = "No message"
     try:
         if (queue is None):
@@ -57,8 +54,7 @@ def notify_transfer_status_message(queue=None):
             "admin_metadata": {"original_queue": transfer_queue}
         }
 
-        print("Notify queue {}".format(transfer_queue))
-            
+             
         #Default to one hour from now
         now_in_ms = int(time.time())*1000
         expiration = int(os.getenv('MESSAGE_EXPIRATION_MS', 36000000)) + now_in_ms

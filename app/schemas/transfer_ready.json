@@ -1,0 +1,49 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"$id": "http://hdc3adomain.com/schemas/transfer_ready.json",
+	"title": "Exported Data Ready for Transfer",
+	"type": "object",
+	"properties": {
+		"package_id": {
+			"type": "string",
+			"description": "The name of the package being transferred"
+		},
+		"s3_bucket_name": {
+			"type": "string",
+			"description": "The name of the s3 bucket to transfer data from"
+		},
+		"s3_path": {
+			"type": "string",
+			"description": "The path (prefix) of the data"
+		},
+		"destination_path": {
+			"type": "string",
+			"description": "The destination path for the data"
+		},
+		"admin_metadata": {
+			"type": "object",
+			"properties": {
+				"original_queue": {
+					"type": "string",
+					"description": "The name of the queue that this message is being placed in"
+				},
+				"retry_count": {
+					"type": "integer",
+					"description": "The number of times this has been retried"
+				}
+			},
+			"required": [
+				"original_queue",
+				"retry_count"
+			]
+		}
+	},
+	"required": [
+		"package_id",
+		"s3_bucket_name",
+		"s3_path",
+		"destination_path",
+		"admin_metadata"
+	],
+	"additionalProperties": false
+}
