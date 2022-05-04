@@ -1,5 +1,6 @@
-import logging, os, os.path, boto3
-import transfer_service
+import logging, os, os.path, boto3, sys
+sys.path.append('app/transfer_service')
+import transfer_service.transfer_service as transfer_service
 import transfer_helper
 
 logging.basicConfig(format='%(message)s')

@@ -3,6 +3,10 @@ ENV=development
 
 PYTHONPATH=/home/appuser/app
 
+LOGFILE_PATH=/home/appuser/logs/hdc3a_transfer_service.log
+#Choose from CRITICAL, ERROR, WARNING, INFO, DEBUG
+LOGLEVEL=DEBUG
+
 VERSION=XXX
 
 TRANSFER_MQ_HOST=b-e57fc418-9916-406e-882b-6c49fa1e2ee2-1.mq.us-east-1.amazonaws.com

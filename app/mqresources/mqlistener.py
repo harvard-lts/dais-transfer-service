@@ -2,7 +2,8 @@ import json, time, traceback, stomp, sys, os, logging
 import mqutils
 import mqexception
 
-import transfer_service, transfer_ready_validation
+import transfer_service.transfer_service as transfer_service
+import transfer_service.transfer_ready_validation as transfer_ready_validation
 
 # Subscription id is unique to the subscription in this case there is only one subscription per connection
 _sub_id = 1
