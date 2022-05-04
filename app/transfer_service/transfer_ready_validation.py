@@ -1,5 +1,4 @@
 import os, os.path, json, jsonschema, logging
-import os.path
 
 logfile=os.getenv('LOGFILE_PATH', 'hdc3a_transfer_service')
 loglevel=os.getenv('LOGLEVEL', 'WARNING')

@@ -1,5 +1,6 @@
 import sys, os, os.path, logging, time, json
 sys.path.append('app/mqresources')
+sys.path.append('app/transfer_service')
 import mqutils
 import mqlistener
 import transfer_helper

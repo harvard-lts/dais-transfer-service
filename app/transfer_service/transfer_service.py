@@ -1,7 +1,7 @@
 import boto3, os, os.path, logging
-import transfer_ready_validation
 from mqresources import mqutils
 from botocore.exceptions import ClientError
+import transfer_service.transfer_ready_validation as transfer_ready_validation
 
 s3 = boto3.resource('s3') 
 logfile=os.getenv('LOGFILE_PATH', 'hdc3a_transfer_service')
@@ -37,10 +37,20 @@ def transfer_data(message_data):
 def path_exists(s3_bucket, s3_path):
     try:
         s3_connect = boto3.client('s3', "us-east-1")
-        s3_connect.head_object(Bucket=s3_bucket, Key=s3_path)
-        return True
-    except ClientError as e:
+        res = s3_connect.list_objects_v2(
+            Bucket=s3_bucket
+        )
+        for obj in res.get('Contents', []):
+            if obj['Key'].startswith(s3_path + "/"):
+                return True
+        
         return False
+    except ClientError as e:
+        print(e)
+        if e.response['Error']['Code'] == "404":
+            return False
+        else:
+            raise e
        
 def perform_transfer(s3_bucket_name, s3_path, dropbox_dir):
     """
@@ -64,4 +74,6 @@ def validate_transfer():
 
 def cleanup_s3():
     return True
+        
+
         
