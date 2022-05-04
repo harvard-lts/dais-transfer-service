@@ -131,3 +131,4 @@ dmypy.json
 .project
 .bash_history
 .py*
+.idea
