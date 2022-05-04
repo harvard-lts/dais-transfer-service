@@ -1,5 +1,6 @@
-import transfer_ready_validation, jsonschema, json, pytest, sys
+import jsonschema, json, pytest, sys
 sys.path.append('app')
+import transfer_service.transfer_ready_validation as transfer_ready_validation
 
 def test_valid_json():
     msg_json = {

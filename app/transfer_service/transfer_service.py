@@ -1,5 +1,5 @@
 import boto3, os, os.path, logging
-import transfer_ready_validation
+import transfer_service.transfer_ready_validation as transfer_ready_validation
 
 s3 = boto3.resource('s3') 
 logfile=os.getenv('LOGFILE_PATH', 'hdc3a_transfer_service')
