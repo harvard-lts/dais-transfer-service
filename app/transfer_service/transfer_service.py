@@ -2,6 +2,7 @@ import boto3, os, os.path, logging
 from mqresources import mqutils
 from botocore.exceptions import ClientError
 import transfer_service.transfer_ready_validation as transfer_ready_validation
+from transfer_service.transferexception import TransferException 
 
 s3 = boto3.resource('s3') 
 logfile=os.getenv('LOGFILE_PATH', 'hdc3a_transfer_service')
@@ -14,8 +15,7 @@ def transfer_data(message_data):
     dest_path = message_data['destination_path']
    
     if not path_exists(s3_bucket_name, s3_path):
-       #TODO Make this a customized exception
-        raise Exception("The path {} does not exists in bucket {}.".format(s3_path, s3_bucket_name))  
+        raise TransferException("The path {} does not exists in bucket {}.".format(s3_path, s3_bucket_name))  
            
     #Transfer
     perform_transfer(s3_bucket_name, s3_path, dest_path)
@@ -23,15 +23,13 @@ def transfer_data(message_data):
     #TODO Validate transfer hash
     transfer_succeeded=validate_transfer()
     if not transfer_succeeded:
-       
-        #TODO Make this a customized exception
-        raise Exception("Transfer failed")
+       raise TransferException("Transfer failed")
     
     #TODO Notify transfer success
     transfer_status = mqutils.TransferStatus(message_data["package_id"], "success", dest_path)
     mqutils.notify_transfer_status_message(transfer_status)
             
-    #TODO Cleanup s3
+    #Cleanup s3
     cleanup_s3()
 
 def path_exists(s3_bucket, s3_path):
@@ -72,8 +70,18 @@ def perform_transfer(s3_bucket_name, s3_path, dropbox_dir):
 def validate_transfer():
     return True
 
-def cleanup_s3():
-    return True
+def cleanup_s3(s3_bucket_name, s3_path):
+    bucket = s3.Bucket(s3_bucket_name)
+    if path_exists(s3_bucket_name, s3_path):
+        resp = bucket.objects.filter(Prefix=s3_path).delete()
+        print(resp)
+    
+        if (len(resp) == 0):
+            raise TransferException("Nothing was deleted for {}/{}".format(s3_bucket_name, s3_path))
+        if ('Errors' in resp[0]):
+            raise TransferException("Errors occurred while attempting deletion for {}/{}:\n{}".format(s3_bucket_name, s3_path, resp['Errors']))
+    else:
+        logging.warn("Prefix {}/{} does not exist".format(s3_bucket_name, s3_path))
+    
         
-
         
