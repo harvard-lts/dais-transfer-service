@@ -2,10 +2,6 @@ import json, time, traceback, stomp, sys, os, logging
 import mqutils
 import mqexception
 
-import sys
-# insert at position 1 in the path, as 0 is the path of this file.
-sys.path.insert(1, '/home/appuser/app')
-
 import transfer_service, transfer_ready_validation
 
 # Subscription id is unique to the subscription in this case there is only one subscription per connection
