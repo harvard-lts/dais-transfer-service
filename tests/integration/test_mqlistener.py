@@ -80,7 +80,6 @@ def test_listener_and_transfer():
 def notify_dry_run_data_ready_transfer_message():
     '''Creates a dummy queue json message to notify the queue that the 
     DVN data is ready to be transferred but does not actually do the transfer.  '''
-    message = "No message"
     try:
         
         msg_json = {
@@ -111,7 +110,6 @@ def notify_dry_run_data_ready_transfer_message():
 def notify_data_ready_transfer_message():
     '''Creates a dummy queue json message to notify the queue that the 
     DVN data is ready to be transferred but does not actually do the transfer.  '''
-    message = "No message"
     try:
         
         msg_json = {
