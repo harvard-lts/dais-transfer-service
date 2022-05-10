@@ -22,3 +22,8 @@ S3_BUCKET_NAME=XXX
 #Read-Write Credentials
 AWS_ACCESS_KEY_ID=XXX
 AWS_SECRET_ACCESS_KEY=XXX
+
+#The filename of the file that contains
+#the hash of each the supplied files (for validation)
+SUPPLIED_HASH_MAPPING_FILENAME=XXX
+CHECKSUM_ALGORITHM=XXX

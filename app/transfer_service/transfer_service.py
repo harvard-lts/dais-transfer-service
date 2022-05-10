@@ -1,8 +1,9 @@
-import boto3, os, os.path, logging
+import boto3, os, os.path, logging, zipfile, glob
 from mqresources import mqutils
 from botocore.exceptions import ClientError
 import transfer_service.transfer_ready_validation as transfer_ready_validation
 from transfer_service.transferexception import TransferException 
+import transfer_service.transfer_validation as transfer_validation 
 
 s3 = boto3.resource('s3') 
 logfile=os.getenv('LOGFILE_PATH', 'hdc3a_transfer_service')
@@ -20,9 +21,11 @@ def transfer_data(message_data):
     #Transfer
     perform_transfer(s3_bucket_name, s3_path, dest_path)
     
-    #TODO Validate transfer hash
-    transfer_succeeded=validate_transfer()
-    if not transfer_succeeded:
+    zipextractionpath = unzip_transfer(dest_path, s3_path)
+        
+    #Validate transfer 
+    if not transfer_validation.validate_transfer(zipextractionpath):
+        #TODO More details
        raise TransferException("Transfer failed")
     
     #TODO Notify transfer success
@@ -67,10 +70,35 @@ def perform_transfer(s3_bucket_name, s3_path, dropbox_dir):
             continue
         bucket.download_file(obj.key, target)
         
-def validate_transfer():
-    return True
+def unzip_transfer(dest_path, package_name):
+    '''Unzips the transferred zipfile'''
+    
+    
+    fulldestpath = os.path.join(dest_path, package_name)
+    
+    zipfilere = r"{}/*.zip".format(fulldestpath)
+    files = glob.glob(zipfilere)
+    print(files)
+    if len(files) == 0:
+        raise Exception("No zip files found in {}".format(fulldestpath))
+    elif len(files) > 1:
+        raise Exception("{} zip files found in {}. Expected 1.".format(len(files), fulldestpath))
+    
+    zipfilepath = os.path.join(fulldestpath, files[0])
+    zipextractionpath = os.path.join(fulldestpath, "extracted")
+    
+    #Unzip the zipfile
+    with zipfile.ZipFile(zipfilepath, 'r') as zip_ref:
+        zip_ref.extractall(zipextractionpath) 
+    
+    extracteditems = os.listdir(zipextractionpath)
+    if (len(extracteditems) != 1):
+        raise Exception("{} directory expected 1 item but found {}".format(zipextractionpath, len(extracteditems)))    
+    
+    return os.path.join(zipextractionpath, extracteditems[0])    
 
 def cleanup_s3(s3_bucket_name, s3_path):
+    ''' Remove the successfully transferred data from the S3 bucket'''
     bucket = s3.Bucket(s3_bucket_name)
     if path_exists(s3_bucket_name, s3_path):
         resp = bucket.objects.filter(Prefix=s3_path).delete()
