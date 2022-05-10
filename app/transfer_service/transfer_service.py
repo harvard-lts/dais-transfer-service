@@ -22,13 +22,18 @@ def transfer_data(message_data):
     perform_transfer(s3_bucket_name, s3_path, dest_path)
     
     zipextractionpath = unzip_transfer(dest_path, s3_path)
-        
-    #Validate transfer 
-    if not transfer_validation.validate_transfer(zipextractionpath, os.path.join(dest_path, s3_path)):
-        #TODO More details
-       raise TransferException("Transfer failed")
     
-    #TODO Notify transfer success
+    try:   
+        #Type ValidationReturnValue
+        validation_retval = transfer_validation.validate_transfer(zipextractionpath, os.path.join(dest_path, s3_path)) 
+        #Validate transfer 
+        if not validation_retval.isvalid:
+           raise ValidationException("Transfer Validation Failed Gracefully: {}".format(validation_retval.get_error_messages))
+    except ValidationException as e:
+        logging.exception("Transfer Validation Failed with Exception {}".format(str(e)))
+        raise e
+    
+    #Notify transfer success
     transfer_status = mqutils.TransferStatus(message_data["package_id"], "success", dest_path)
     mqutils.notify_transfer_status_message(transfer_status)
             
