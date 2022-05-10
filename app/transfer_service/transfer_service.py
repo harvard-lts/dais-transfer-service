@@ -24,7 +24,7 @@ def transfer_data(message_data):
     zipextractionpath = unzip_transfer(dest_path, s3_path)
         
     #Validate transfer 
-    if not transfer_validation.validate_transfer(zipextractionpath):
+    if not transfer_validation.validate_transfer(zipextractionpath, os.path.join(dest_path, s3_path)):
         #TODO More details
        raise TransferException("Transfer failed")
     
@@ -102,8 +102,7 @@ def cleanup_s3(s3_bucket_name, s3_path):
     bucket = s3.Bucket(s3_bucket_name)
     if path_exists(s3_bucket_name, s3_path):
         resp = bucket.objects.filter(Prefix=s3_path).delete()
-        print(resp)
-    
+        
         if (len(resp) == 0):
             raise TransferException("Nothing was deleted for {}/{}".format(s3_bucket_name, s3_path))
         if ('Errors' in resp[0]):

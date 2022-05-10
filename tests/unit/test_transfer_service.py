@@ -9,12 +9,8 @@ data_path = "/home/appuser/tests/data"
 def test_unzip():
     zipextractionpath = transfer_service.unzip_transfer(data_path, s3_path)
     #Verify that the extracted directory now exists
-    #Verify that the hash mapping file exists.
     assert os.path.exists(zipextractionpath)
-    
-    #Verify that the hash mapping file exists.
-    assert os.path.exists(os.path.join(zipextractionpath, os.getenv("SUPPLIED_HASH_MAPPING_FILENAME")))
-    
+
     cleanup_extraction(os.path.join(data_path, s3_path, "extracted"))
 
 def cleanup_extraction(zipextractionpath):
@@ -23,3 +19,16 @@ def cleanup_extraction(zipextractionpath):
         shutil.rmtree(zipextractionpath)
     except OSError as e:
         print("Error: %s : %s" % (zipextractionpath, e.strerror))
+        
+def test_validate():
+    zipextractionpath = transfer_service.unzip_transfer(data_path, s3_path)
+    #Verify that the extracted directory now exists
+    #Verify that the hash mapping file exists.
+    assert os.path.exists(zipextractionpath)
+    
+    #Verify that the hash mapping file exists.
+    assert os.path.exists(os.path.join(zipextractionpath, os.getenv("SUPPLIED_HASH_MAPPING_FILENAME")))
+    
+    assert transfer_validation.validate_transfer(zipextractionpath, os.path.join(data_path, s3_path))
+    
+    cleanup_extraction(os.path.join(data_path, s3_path, "extracted"))
