@@ -127,5 +127,7 @@ def validate_required_unzipped_files(unzipped_data_direcory):
 def calculate_checksum(filepath):
     if checksum_algorithm == "sha256":
         return hashlib.sha256(open(filepath,'rb').read()).hexdigest()
+    elif checksum_algorithm == "sha512":
+        return hashlib.sha512(open(filepath,'rb').read()).hexdigest()
     #default to md5
     return hashlib.md5(open(filepath,'rb').read()).hexdigest()
