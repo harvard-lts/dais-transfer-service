@@ -62,10 +62,6 @@ def validate_mapping(unzipped_data_direcory):
                 logging.error("File hash is incorrect for {}. Expected {} but received {}".format(filepath, provided_hashvalue, calc_hashvalue))
                 isvalid = False
                 
-            print(provided_hashvalue)
-            print(filepath)
-            print(calc_hashvalue)
-            print("\n")
             logging.debug(provided_hashvalue)
             logging.debug(filepath)
             logging.debug(calc_hashvalue)

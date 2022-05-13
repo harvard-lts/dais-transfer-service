@@ -7,7 +7,8 @@ s3_path="doi-12-3456-transfer-service-test"
 data_path = "/home/appuser/tests/data"
 
 def test_unzip():
-    zipextractionpath = transfer_service.unzip_transfer(data_path, s3_path)
+    dest_path = os.path.join(data_path, s3_path)
+    zipextractionpath = transfer_service.unzip_transfer(dest_path)
     #Verify that the extracted directory now exists
     assert os.path.exists(zipextractionpath)
 
@@ -21,7 +22,8 @@ def cleanup_extraction(zipextractionpath):
         print("Error: %s : %s" % (zipextractionpath, e.strerror))
         
 def test_validate():
-    zipextractionpath = transfer_service.unzip_transfer(data_path, s3_path)
+    dest_path = os.path.join(data_path, s3_path)
+    zipextractionpath = transfer_service.unzip_transfer(dest_path)
     #Verify that the extracted directory now exists
     #Verify that the hash mapping file exists.
     assert os.path.exists(zipextractionpath)

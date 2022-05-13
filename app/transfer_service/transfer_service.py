@@ -3,6 +3,7 @@ from mqresources import mqutils
 from botocore.exceptions import ClientError
 import transfer_service.transfer_ready_validation as transfer_ready_validation
 from transfer_service.transferexception import TransferException 
+from transfer_service.transferexception import ValidationException 
 import transfer_service.transfer_validation as transfer_validation 
 
 s3 = boto3.resource('s3') 
@@ -21,14 +22,17 @@ def transfer_data(message_data):
     #Transfer
     perform_transfer(s3_bucket_name, s3_path, dest_path)
     
-    zipextractionpath = unzip_transfer(dest_path, s3_path)
+    zipextractionpath = unzip_transfer(dest_path)
     
     try:   
         #Type ValidationReturnValue
-        validation_retval = transfer_validation.validate_transfer(zipextractionpath, os.path.join(dest_path, s3_path)) 
+        validation_retval : transfer_validation.ValidationReturnValue  = transfer_validation.validate_transfer(zipextractionpath, dest_path) 
         #Validate transfer 
         if not validation_retval.isvalid:
-           raise ValidationException("Transfer Validation Failed Gracefully: {}".format(validation_retval.get_error_messages))
+            msg = "Transfer Validation Failed Gracefully:"
+            msg = msg + "\n" + ','.join(validation_retval.get_error_messages())
+            logging.error(msg)
+            raise ValidationException(msg)
     except ValidationException as e:
         logging.exception("Transfer Validation Failed with Exception {}".format(str(e)))
         raise e
@@ -38,7 +42,8 @@ def transfer_data(message_data):
     mqutils.notify_transfer_status_message(transfer_status)
             
     #Cleanup s3
-    cleanup_s3()
+    #TODO - once this is functioning end to end, uncomment
+    #cleanup_s3(s3_bucket_name, s3_path)
 
 def path_exists(s3_bucket, s3_path):
     try:
@@ -66,6 +71,9 @@ def perform_transfer(s3_bucket_name, s3_path, dropbox_dir):
         s3_path: the folder path in the s3 bucket
         dropbox_dir: an absolute directory path in the local file system
     """
+    
+    logging.debug("Transferring {}/{} to {}".format(s3_bucket_name, s3_path, dropbox_dir))
+        
     bucket = s3.Bucket(s3_bucket_name)
     for obj in bucket.objects.filter(Prefix=s3_path):
         target = os.path.join(dropbox_dir, os.path.relpath(obj.key, s3_path))
@@ -73,16 +81,14 @@ def perform_transfer(s3_bucket_name, s3_path, dropbox_dir):
             os.makedirs(os.path.dirname(target))
         if obj.key[-1] == '/':
             continue
+        logging.debug("Downloading {} to {}".format(obj.key, target))
         bucket.download_file(obj.key, target)
         
-def unzip_transfer(dest_path, package_name):
+def unzip_transfer(fulldestpath):
     '''Unzips the transferred zipfile'''
-    
-    
-    fulldestpath = os.path.join(dest_path, package_name)
-    
-    zipfilere = r"{}/*.zip".format(fulldestpath)
-    files = glob.glob(zipfilere)
+
+    zip_file_re = r"{}/*.zip".format(fulldestpath)
+    files = glob.glob(zip_file_re)
     print(files)
     if len(files) == 0:
         raise Exception("No zip files found in {}".format(fulldestpath))
