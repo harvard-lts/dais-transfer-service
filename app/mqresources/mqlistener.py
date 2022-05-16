@@ -60,10 +60,11 @@ class MqListener(stomp.ConnectionListener):
         try: 
             self.message_data = json.loads(body)
         except json.decoder.JSONDecodeError: 
+            logging.exception("Incorrect formatting of message detected.  Required JSON but received {} ".format(body))
             raise mqexception.MQException("Incorrect formatting of message detected.  Required JSON but received {} ".format(body))
         
         self.connection_params.conn.ack(self.message_id, 1)
-        #TODO- Handle
+
         logging.debug(' message_data {}'.format(self.message_data))
         logging.debug(' message_id {}'.format(self.message_id))
         
@@ -83,7 +84,6 @@ class MqListener(stomp.ConnectionListener):
         except Exception as e:
             transfer_status = mqutils.TransferStatus(self.message_data["package_id"], "failure", self.message_data['destination_path'])
             mqutils.notify_transfer_status_message(transfer_status)
-            #TODO Send email message
             logging.exception("validation failed so transfer was not completed")
     
 
