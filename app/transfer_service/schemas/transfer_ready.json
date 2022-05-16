@@ -8,6 +8,10 @@
 			"type": "string",
 			"description": "The name of the package being transferred"
 		},
+		"application_name": {
+		    "type": "string",
+            "description": "The application name"
+		},
 		"s3_bucket_name": {
 			"type": "string",
 			"description": "The name of the s3 bucket to transfer data from"
@@ -40,10 +44,10 @@
 	},
 	"required": [
 		"package_id",
+		"application_name",
 		"s3_bucket_name",
 		"s3_path",
 		"destination_path",
 		"admin_metadata"
-	],
-	"additionalProperties": false
+	]
 }
