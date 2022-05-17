@@ -18,8 +18,7 @@ def test_perform_transfer():
     assert transfer_service.path_exists(s3_bucket, s3_path)
      
     dropbox_path="/home/appuser/local/dropbox"
-     
-    dest_path = os.path.join(dropbox_path, s3_path)
+    dest_path = os.path.join(dropbox_path, os.path.basename(s3_path))
      
     transfer_service.perform_transfer(s3_bucket, s3_path, dest_path)
      
