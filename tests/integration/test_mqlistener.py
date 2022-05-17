@@ -84,6 +84,7 @@ def notify_dry_run_data_ready_transfer_message():
         
         msg_json = {
             "dry_run": True,
+            "application_name": "Dataverse",
             "package_id": "12345",
             "s3_path": s3_path,
             "s3_bucket_name": s3_bucket,
@@ -114,6 +115,7 @@ def notify_data_ready_transfer_message():
         
         msg_json = {
             "package_id": "doi-12-3456-transfer-service-test",
+            "application_name": "Dataverse",
             "s3_path": s3_path,
             "s3_bucket_name": s3_bucket,
             "destination_path": destination_path,
