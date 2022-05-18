@@ -137,3 +137,5 @@ local/dropbox/*
 !local/dropbox/.keep
 
 .idea
+
+.DS_Store

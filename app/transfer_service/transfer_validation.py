@@ -20,13 +20,10 @@ class ValidationReturnValue:
 
 def validate_transfer(unzipped_data_direcory, data_directory_name):
     '''Validates the data that was transferred by checking for:
-    1. The required files in the data directory
-    2. The required files in the unzipped directory
-    3. The hash mapping file against the actual files'''
+    1. The required files in the unzipped directory
+    2. The hash mapping file against the actual files'''
     
-    retval = validate_required_files(data_directory_name)
-    if retval.isvalid:
-        retval = validate_required_unzipped_files(unzipped_data_direcory)
+    retval = validate_required_unzipped_files(unzipped_data_direcory)
     if retval.isvalid:
         retval = validate_mapping(unzipped_data_direcory)
             
@@ -72,33 +69,6 @@ def validate_mapping(unzipped_data_direcory):
     
     return retval
 
-def validate_required_files(data_directory_name):  
-    '''Validates that there is DDI file (format of <doi>_datacite.v#.#xml)
-    and a drsConfig file (format of drsConfig.<doi>_v#.#.json)'''
-    ddiexists = False
-    drsconfigexists = False
-    for file in os.listdir(data_directory_name):
-        if os.path.isfile(os.path.join(data_directory_name,file)):
-            ddi_regexp = r"^{}_datacite\.v[0-9]+\.[0-9]+\.xml".format(os.path.basename(data_directory_name))
-            drsconfig_regexp = r"^drsConfig\.{}_v[0-9]+\.[0-9]+\.json".format(os.path.basename(data_directory_name))
-            if re.search(ddi_regexp, file):
-                ddiexists = True
-            elif re.search(drsconfig_regexp, file):
-                drsconfigexists = True
-    
-    errormessages = []
-    if not ddiexists:
-        msg = "Missing DDI file.  Expected {}.datacite.v#.#.xml".format(os.path.basename(data_directory_name))
-        errormessages.append(msg)
-        logging.error(msg)
-    if not drsconfigexists:
-        msg = "Missing drsConfig file.  Expected drsConfig.{}_v#.#.xml".format(os.path.basename(data_directory_name))
-        errormessages.append(msg)
-        logging.error(msg)
-    
-    retval = ValidationReturnValue(ddiexists and drsconfigexists, errormessages)
-    
-    return retval
                  
 def validate_required_unzipped_files(unzipped_data_direcory):
     '''Validates that the list of required files provided in the .env
