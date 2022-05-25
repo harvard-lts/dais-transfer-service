@@ -1,4 +1,4 @@
-import os, os.path, logging, hashlib, re
+import os, os.path, logging, hashlib, re, glob
 from transfer_service.transferexception import ValidationException 
 
 logfile=os.getenv('LOGFILE_PATH', 'hdc3a_transfer_service')
@@ -22,9 +22,10 @@ def validate_transfer(unzipped_data_direcory, data_directory_name):
     '''Validates the data that was transferred by checking for:
     1. The required files in the unzipped directory
     2. The hash mapping file against the actual files'''
-    
+    _does_data_exist(unzipped_data_direcory)
     retval = validate_required_unzipped_files(unzipped_data_direcory)
-    if retval.isvalid:
+    #We only check for the hash mapping file if data exists
+    if retval.isvalid and _does_data_exist(unzipped_data_direcory):
         retval = validate_mapping(unzipped_data_direcory)
             
     return retval
@@ -89,6 +90,15 @@ def validate_required_unzipped_files(unzipped_data_direcory):
     retval = ValidationReturnValue(required_files_exist, errormessages)
     
     return retval
+
+def _does_data_exist(unzipped_data_direcory):
+    '''Checks whether any data exists'''
+    data_files_exist=False
+    data_dir = os.path.join(unzipped_data_direcory, "data")
+    if os.path.exists(data_dir):
+        files = glob.glob(data_dir + '/**/*.*', recursive=True)
+        return len(files) > 0
+    return False
 
 def calculate_checksum(filepath):
     if checksum_algorithm == "sha256":

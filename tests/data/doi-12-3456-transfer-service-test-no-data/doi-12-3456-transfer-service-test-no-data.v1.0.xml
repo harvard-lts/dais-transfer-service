@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resource xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd"
+          xmlns="http://datacite.org/schema/kernel-4"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <identifier identifierType="DOI">10.5072/FK2/WNV9S9</identifier>
+    <creators><creator><creatorName>Finch, Fiona</creatorName><affiliation>(Birds Inc.)</affiliation></creator></creators>
+    <titles>
+        <title>Darwin's Finches</title>
+    </titles>
+    <publisher>Root</publisher>
+    <publicationYear>2022</publicationYear>
+    <resourceType resourceTypeGeneral="Dataset"/>
+    
+    <descriptions>
+        <description descriptionType="Abstract">Darwin&apos;s finches (also known as the Galápagos finches) are a group of about fifteen species of passerine birds.</description>
+    </descriptions>
+    <contributors><contributor contributorType="ContactPerson"><contributorName>Finch, Fiona</contributorName></contributor></contributors>
+</resource>
