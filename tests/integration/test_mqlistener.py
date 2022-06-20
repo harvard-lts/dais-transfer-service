@@ -15,7 +15,8 @@ destination_path=os.path.join("/home/appuser/local/dropbox",s3_path)
 
 def test_listener():
     '''Tests to see if the listener picks up a message from the queue'''
-    mqlistenerobject = mqlistener.get_mqlistener(transfer_queue)
+    mq_connection_params = mqutils.get_transfer_mq_connection(transfer_queue)
+    mqlistenerobject = mqlistener.get_mqlistener(mq_connection_params)
     
     conn = mqlistenerobject.get_connection()
     conn.set_listener('', mqlistenerobject)
@@ -45,7 +46,8 @@ def test_listener_and_transfer():
     '''Tests to see if the listener picks up a message from the queue and triggers the transfer'''
     #Upload the data to s3 to test the dropbox transfer
     transfer_helper.upload_sample_data(s3_bucket, s3_path)
-    
+
+    mq_connection_params = mqutils.get_transfer_mq_connection(transfer_queue2)
     mqlistenerobject = mqlistener.get_mqlistener(transfer_queue2)
     
     conn = mqlistenerobject.get_connection()
