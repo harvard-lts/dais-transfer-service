@@ -1,4 +1,3 @@
-import logging
 import os
 
 import transfer_service.transfer_ready_validation as transfer_ready_validation
@@ -22,7 +21,8 @@ class TransferReadyQueueListener(StompListenerBase):
         )
 
     def _handle_received_message(self, message_body: dict, message_id: str, message_subscription: str) -> None:
-        self._logger.info(
+        self._logger.debug("************************ TRANSFER READY LISTENER - ON_MESSAGE ************************")
+        self._logger.debug(
             "Received message from Transfer Queue. Message body: {}. Message id: {}".format(
                 str(message_body),
                 message_id
@@ -40,16 +40,15 @@ class TransferReadyQueueListener(StompListenerBase):
             transfer_ready_validation.validate_json_schema(message_body)
 
             # Transfer data
-            logging.debug(
+            self._logger.debug(
                 'TRANSFERRING DATA {} to {}'.format(message_body['s3_path'], message_body['destination_path'])
             )
             transfer_service.transfer_data(message_body)
         except Exception:
-            # TODO: NACKs for malformed messages
             transfer_status = mqutils.TransferStatus(
                 message_body.get("package_id"),
                 "failure",
                 message_body.get('destination_path')
             )
-            # mqutils.notify_transfer_status_message(transfer_status)
-            # logging.exception("validation failed so transfer was not completed")
+            mqutils.notify_transfer_status_message(transfer_status)
+            self._logger.exception("validation failed so transfer was not completed")

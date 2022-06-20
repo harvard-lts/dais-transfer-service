@@ -5,11 +5,7 @@ from logging.handlers import RotatingFileHandler
 import mqresources.mqutils as mqutils
 from flask import Flask
 from healthcheck import HealthCheck, EnvironmentDump
-from mqresources.transfer_ready_queue_listener import TransferReadyQueueListener
-
-# TODO
-'''This class is currently entirely for the purpose of providing
-a healthcheck and initializing queue listener'''
+from mqresources.listener.transfer_ready_queue_listener import TransferReadyQueueListener
 
 LOG_FILE_DEFAULT_PATH = "hdc3a_transfer_service"
 LOG_FILE_DEFAULT_LEVEL = logging.WARNING
@@ -57,7 +53,7 @@ def create_app():
     app.add_url_rule("/environment", "environment", view_func=envdump.run)
 
     # Initializing queue listener
-    logging.debug("--------- CREATING THE LISTENER ---------")
+    logging.debug("Creating Transfer Ready queue listener...")
     TransferReadyQueueListener()
 
     return app
