@@ -4,6 +4,7 @@ import os
 import os.path
 import sys
 import time
+from collections import OrderedDict
 from unittest.mock import patch
 
 sys.path.append('app/mqresources')
@@ -41,7 +42,7 @@ def test_listener(get_queue_name_mock, handle_received_message_mock):
 
     args, kwargs = handle_received_message_mock.call_args
     assert type(args[0]) is dict
-    assert args[0] == message_json
+    assert OrderedDict(args[0]) == OrderedDict(message_json)
 
     # cleanup the queue and disconnect the listener
     mq_listener_object._acknowledge_message(args[1], args[2])
@@ -71,7 +72,7 @@ def test_listener_and_transfer(get_queue_name_mock, handle_received_message_mock
 
     args, kwargs = handle_received_message_mock.call_args
     assert type(args[0]) is dict
-    assert args[0] == message_json
+    assert OrderedDict(args[0]) == OrderedDict(message_json)
     assert os.path.exists(destination_path)
 
     # cleanup the data that was moved to the dropbox
