@@ -43,6 +43,8 @@ def test_listener(get_queue_name_mock, handle_received_message_mock):
     assert type(args[0]) is dict
     assert args[0] == message_json
 
+    # cleanup the queue and disconnect the listener
+    mq_listener_object._acknowledge_message(args[1], args[2])
     mq_listener_object.disconnect()
 
 
@@ -74,6 +76,8 @@ def test_listener_and_transfer(get_queue_name_mock, handle_received_message_mock
 
     # cleanup the data that was moved to the dropbox
     transfer_helper.cleanup_dropbox(destination_path)
+    # cleanup the queue and disconnect the listener
+    mq_listener_object._acknowledge_message(args[1], args[2])
     mq_listener_object.disconnect()
 
 
