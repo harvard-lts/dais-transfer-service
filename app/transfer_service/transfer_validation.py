@@ -3,7 +3,7 @@ from transfer_service.transferexception import ValidationException
 
 logfile=os.getenv('LOGFILE_PATH', 'hdc3a_transfer_service')
 loglevel=os.getenv('LOGLEVEL', 'WARNING')
-logging.basicConfig(filename=logfile, level=loglevel)
+logging.basicConfig(filename=logfile, level=loglevel, format="%(asctime)s:%(levelname)s:%(message)s")
 
 checksum_algorithm=os.getenv("CHECKSUM_ALGORITHM", "md5")
 
