@@ -15,7 +15,7 @@ class StompInteractor(ABC):
     __STOMP_CONN_TIMEOUT_MS = 5000
 
     def __init__(self) -> None:
-        logfile=os.getenv('LOGFILE_PATH', 'drs_translation_service')
+        logfile=os.getenv('LOGFILE_PATH', 'dais_transfer_service')
         loglevel=os.getenv('LOGLEVEL', 'WARNING')
         logging.basicConfig(filename=logfile, level=loglevel, format="%(asctime)s:%(levelname)s:%(message)s")
         self._logger = logging.getLogger()
