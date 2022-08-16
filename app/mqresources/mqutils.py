@@ -82,5 +82,3 @@ def notify_transfer_status_message(transfer_status, queue=None):
         logging.error(e)
         raise(e)
     return message
-
-

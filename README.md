@@ -1,4 +1,4 @@
-# hdc3a-transfer-service
+# dais-transfer-service
 A service to transfer data from S3 to the dropbox
 
 ## Local setup
@@ -21,7 +21,7 @@ Note, testing uses its own queues so they will not interfere with the queues use
 2. Exec into the container:
 
 ```
-docker exec -it hdc3a-transfer-service bash
+docker exec -it dais-transfer-service bash
 ```
 
 3. Run the tests

@@ -14,7 +14,7 @@ logging.basicConfig(filename=logfile, level=loglevel, format="%(asctime)s:%(leve
 def transfer_data(message_data):
     s3_bucket_name = message_data['s3_bucket_name']
     s3_path = message_data['s3_path'] 
-    dest_path = os.path.join(message_data['destination_path'], os.path.basename(s3_path))
+    dest_path = os.path.join(message_data['destination_path'], message_data['package_id'])
    
     if not path_exists(s3_bucket_name, s3_path):
         raise TransferException("The path {} does not exists in bucket {}.".format(s3_path, s3_bucket_name))  
