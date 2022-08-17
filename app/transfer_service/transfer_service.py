@@ -9,7 +9,7 @@ import transfer_service.transfer_validation as transfer_validation
 s3 = boto3.resource('s3') 
 logfile=os.getenv('LOGFILE_PATH', 'hdc3a_transfer_service')
 loglevel=os.getenv('LOGLEVEL', 'WARNING')
-logging.basicConfig(filename=logfile, level=loglevel)
+logging.basicConfig(filename=logfile, level=loglevel, format="%(asctime)s:%(levelname)s:%(message)s")
 
 def transfer_data(message_data):
     s3_bucket_name = message_data['s3_bucket_name']
@@ -42,8 +42,7 @@ def transfer_data(message_data):
     mqutils.notify_transfer_status_message(transfer_status)
             
     #Cleanup s3
-    #TODO - once this is functioning end to end, uncomment
-    #cleanup_s3(s3_bucket_name, s3_path)
+    cleanup_s3(s3_bucket_name, s3_path)
 
 def path_exists(s3_bucket, s3_path):
     try:
