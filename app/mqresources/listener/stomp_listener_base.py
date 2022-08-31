@@ -4,6 +4,7 @@ to define common behavior for stomp-implemented MQ listener components.
 """
 import json
 import logging
+import os
 from abc import abstractmethod, ABC
 
 import stomp
@@ -11,13 +12,14 @@ from mqresources.listener.stomp_interactor import StompInteractor
 from stomp.utils import Frame
 from tenacity import retry, before_log, wait_exponential, stop_after_attempt
 
-
 class StompListenerBase(stomp.ConnectionListener, StompInteractor, ABC):
     __STOMP_CONN_MIN_RETRY_WAITING_SECONDS = 2
     __STOMP_CONN_MAX_RETRY_WAITING_SECONDS = 10
     __STOMP_CONN_MAX_ATTEMPTS = 36
 
     __ACK_CLIENT_INDIVIDUAL = "client-individual"
+
+    loglevel = loglevel = os.getenv('LOGLEVEL', 'WARNING')
 
     def __init__(self) -> None:
         super().__init__()
@@ -98,8 +100,9 @@ class StompListenerBase(stomp.ConnectionListener, StompInteractor, ABC):
             max=__STOMP_CONN_MAX_RETRY_WAITING_SECONDS
         ),
         stop=stop_after_attempt(__STOMP_CONN_MAX_ATTEMPTS),
-        before=before_log(logging.getLogger(), loglevel)
+        before=before_log(logging.getLogger(), logging.WARNING)
     )
+
     def __create_subscribed_mq_connection(self) -> stomp.Connection:
         connection = self._create_mq_connection()
         connection.subscribe(destination=self._get_queue_name(), id=1, ack=self.__ACK_CLIENT_INDIVIDUAL)

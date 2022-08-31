@@ -3,6 +3,7 @@ This module defines a StompInteractor, which is an abstract class intended
 to define common behavior for stomp-implemented MQ components.
 """
 import logging
+import os
 from abc import ABC, abstractmethod
 
 import stomp
