@@ -6,21 +6,35 @@ from transfer_service.transferexception import TransferException
 from transfer_service.transferexception import ValidationException 
 import transfer_service.transfer_validation as transfer_validation 
 
-s3 = boto3.resource('s3') 
 logfile=os.getenv('LOGFILE_PATH', 'hdc3a_transfer_service')
 loglevel=os.getenv('LOGLEVEL', 'WARNING')
 logging.basicConfig(filename=logfile, level=loglevel, format="%(asctime)s:%(levelname)s:%(message)s")
 
 def transfer_data(message_data):
+    s3 = None
+    if ('application_name' in message_data):
+        if (message_data['application_name'] == "Dataverse"):
+            s3 = boto3.resource('s3',
+                aws_access_key_id=os.getenv("DVN_AWS_ACCESS_KEY_ID"),
+                aws_secret_access_key=os.getenv("DVN_AWS_ACCESS_KEY_ID"),
+                region_name="us-east-1")
+        else:
+            s3 = boto3.resource('s3',
+                aws_access_key_id=os.getenv("EPADD_AWS_ACCESS_KEY_ID"),
+                aws_secret_access_key=os.getenv("EPADD_AWS_ACCESS_KEY_ID"),
+                region_name="us-east-1")
+    else:
+         raise TransferException("The application_name parameter does not exist in the message body {}.".format(message_data))  
+               
     s3_bucket_name = message_data['s3_bucket_name']
     s3_path = message_data['s3_path'] 
     dest_path = os.path.join(message_data['destination_path'], message_data['package_id'])
    
-    if not path_exists(s3_bucket_name, s3_path):
+    if not path_exists(s3, s3_bucket_name, s3_path):
         raise TransferException("The path {} does not exists in bucket {}.".format(s3_path, s3_bucket_name))  
            
     #Transfer
-    perform_transfer(s3_bucket_name, s3_path, dest_path)
+    perform_transfer(s3, s3_bucket_name, s3_path, dest_path)
     
     zipextractionpath = unzip_transfer(dest_path)
     
@@ -42,17 +56,14 @@ def transfer_data(message_data):
     mqutils.notify_transfer_status_message(transfer_status)
             
     #Cleanup s3
-    cleanup_s3(s3_bucket_name, s3_path)
+    cleanup_s3(s3, s3_bucket_name, s3_path)
 
-def path_exists(s3_bucket, s3_path):
+def path_exists(s3, s3_bucket, s3_path):
     try:
-        s3_connect = boto3.client('s3', "us-east-1")
-        res = s3_connect.list_objects_v2(
-            Bucket=s3_bucket
-        )
-        for obj in res.get('Contents', []):
-            if obj['Key'].startswith(s3_path + "/"):
-                return True
+        bucket = s3.Bucket(s3_bucket)
+        res = bucket.objects.filter(Prefix=s3_path)
+        if (list(res.limit(1))):
+            return True
         
         return False
     except ClientError as e:
@@ -62,10 +73,11 @@ def path_exists(s3_bucket, s3_path):
         else:
             raise e
        
-def perform_transfer(s3_bucket_name, s3_path, dropbox_dir):
+def perform_transfer(s3, s3_bucket_name, s3_path, dropbox_dir):
     """
     Download the contents of a folder directory
     Args:
+        s3: The client with credentials
         s3_bucket_name: the name of the s3 bucket
         s3_path: the folder path in the s3 bucket
         dropbox_dir: an absolute directory path in the local file system
@@ -88,7 +100,6 @@ def unzip_transfer(fulldestpath):
 
     zip_file_re = r"{}/*.zip".format(fulldestpath)
     files = glob.glob(zip_file_re)
-    print(files)
     if len(files) == 0:
         raise Exception("No zip files found in {}".format(fulldestpath))
     elif len(files) > 1:
@@ -107,12 +118,11 @@ def unzip_transfer(fulldestpath):
     
     return os.path.join(zipextractionpath, extracteditems[0])    
 
-def cleanup_s3(s3_bucket_name, s3_path):
+def cleanup_s3(s3, s3_bucket_name, s3_path):
     ''' Remove the successfully transferred data from the S3 bucket'''
-    bucket = s3.Bucket(s3_bucket_name)
-    if path_exists(s3_bucket_name, s3_path):
+    if path_exists(s3, s3_bucket_name, s3_path):
+        bucket = s3.Bucket(s3_bucket_name)
         resp = bucket.objects.filter(Prefix=s3_path).delete()
-        
         if (len(resp) == 0):
             raise TransferException("Nothing was deleted for {}/{}".format(s3_bucket_name, s3_path))
         if ('Errors' in resp[0]):
