@@ -18,10 +18,11 @@ TRANSFER_QUEUE_CONSUME_NAME=/queue/transfer-ready
 #Default to one hour
 MESSAGE_EXPIRATION_MS=3600000
 
-S3_BUCKET_NAME=XXX
 #Read-Write Credentials
-AWS_ACCESS_KEY_ID=XXX
-AWS_SECRET_ACCESS_KEY=XXX
+DVN_AWS_ACCESS_KEY_ID=XXX
+DVN_AWS_SECRET_ACCESS_KEY=XXX
+EPADD_AWS_ACCESS_KEY_ID=XXX
+EPADD_AWS_SECRET_ACCESS_KEY=XXX
 
 #The filename of the file that contains
 #the hash of each the supplied files (for validation)
@@ -30,3 +31,6 @@ SUPPLIED_HASH_MAPPING_FILENAME=XXX
 CHECKSUM_ALGORITHM=md5
 #List of required filenames separated by commas.  Use relative paths
 REQUIRED_UNZIPPED_FILES=XXX
+
+##For testing
+S3_BUCKET_NAME=XXX
