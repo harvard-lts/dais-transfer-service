@@ -21,7 +21,7 @@ def transfer_data(message_data):
         else:
             s3 = boto3.resource('s3',
                 aws_access_key_id=os.getenv("EPADD_AWS_ACCESS_KEY_ID"),
-                aws_secret_access_key=os.getenv("EPADD_AWS_ACCESS_KEY_ID"),
+                aws_secret_access_key=os.getenv("EPADD_AWS_SECRET_ACCESS_KEY"),
                 region_name="us-east-1")
     else:
          raise TransferException("The application_name parameter does not exist in the message body {}.".format(message_data))  
