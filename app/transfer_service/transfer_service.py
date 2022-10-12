@@ -16,7 +16,7 @@ def transfer_data(message_data):
         if (message_data['application_name'] == "Dataverse"):
             s3 = boto3.resource('s3',
                 aws_access_key_id=os.getenv("DVN_AWS_ACCESS_KEY_ID"),
-                aws_secret_access_key=os.getenv("DVN_AWS_ACCESS_KEY_ID"),
+                aws_secret_access_key=os.getenv("DVN_AWS_SECRET_ACCESS_KEY"),
                 region_name="us-east-1")
         else:
             s3 = boto3.resource('s3',
