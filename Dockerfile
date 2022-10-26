@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y libpq-dev gcc python-dev supervisor ngi
   pip install gunicorn && \
   pip install --upgrade --force-reinstall -r /tmp/requirements.txt -i https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/ &&\
   groupadd -r -g 55020 appuser && \
+  groupadd -r -g 4177 appuser && \
   useradd -u 55020 -g 55020 --create-home appuser
 
 # Supervisor to run and manage multiple apps in the same container
