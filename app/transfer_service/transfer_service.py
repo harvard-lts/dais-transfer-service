@@ -35,8 +35,15 @@ def transfer_data(message_data):
            
     #Transfer
     perform_transfer(s3, s3_bucket_name, s3_path, dest_path)
+    zipextractionpath = None
+    if ('application_name' in message_data):
+        if (message_data['application_name'] == "Dataverse"):
+            zipextractionpath = unzip_transfer(dest_path)
+        else:
+            zipextractionpath = ""    
+    else:
+         raise TransferException("The application_name parameter does not exist in the message body {}.".format(message_data)) 
     
-    zipextractionpath = unzip_transfer(dest_path)
     
     try:   
         #Type ValidationReturnValue
