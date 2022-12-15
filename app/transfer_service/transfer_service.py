@@ -55,20 +55,8 @@ def transfer_data(message_data):
             logging.exception("Transfer Validation Failed with Exception {}".format(str(e)))
             raise e
 
-    elif application_name == "ePADD":
-
-        try:
-            #Type ValidationReturnValue
-            validation_retval : transfer_validation.ValidationReturnValue  = transfer_validation.validate_transfer(zipextractionpath, dest_path)
-            #Validate transfer
-            if not validation_retval.isvalid:
-                msg = "Transfer Validation Failed Gracefully:"
-                msg = msg + "\n" + ','.join(validation_retval.get_error_messages())
-                logging.error(msg)
-                raise ValidationException(msg)
-        except ValidationException as e:
-            logging.exception("Transfer Validation Failed with Exception {}".format(str(e)))
-            raise e
+    # TODO: Validate ePADD export
+    # elif application_name == "ePADD":
     
     #Notify transfer success
     transfer_status = mqutils.TransferStatus(message_data["package_id"], "success", dest_path)
