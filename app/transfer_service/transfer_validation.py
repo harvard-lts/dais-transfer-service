@@ -28,7 +28,7 @@ def validate_zipped_transfer(s3, message_data):
     data_directory_name = os.path.join(message_data['destination_path'], message_data['package_id'])
 
     retval = validate_required_zipped_file(data_directory_name)
-    if retval.isvalid():
+    if retval.isvalid:
         retval = validate_zip_checksum(s3, s3_bucket_name, s3_path, data_directory_name)
 
     return retval
