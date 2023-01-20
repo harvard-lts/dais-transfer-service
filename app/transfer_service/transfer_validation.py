@@ -19,7 +19,7 @@ class ValidationReturnValue:
         return self.errormessages
 
 
-def validate_zipped_transfer(s3, message_data):
+def validate_zipped_transfer(s3_client, message_data):
     '''Validates the data that was transferred by checking for:
     1. The required files in the destination dir
     2. The hash of zip in s3 against the actual zip'''
@@ -28,8 +28,8 @@ def validate_zipped_transfer(s3, message_data):
     data_directory_name = os.path.join(message_data['destination_path'], message_data['package_id'])
 
     retval = validate_required_zipped_file(data_directory_name)
-    if retval.isvalid():
-        retval = validate_zip_checksum(s3, s3_bucket_name, s3_path, data_directory_name)
+    if retval.isvalid:
+        retval = validate_zip_checksum(s3_client, s3_bucket_name, s3_path, data_directory_name)
 
     return retval
 
@@ -46,7 +46,7 @@ def validate_transfer(unzipped_data_direcory, data_directory_name):
     return retval
 
 
-def validate_zip_checksum(s3, s3_bucket_name, s3_path, data_directory_name):
+def validate_zip_checksum(s3_client, s3_bucket_name, s3_path, data_directory_name):
     '''Validates the zip that was transferred by checking the
     zip hash against the hash in s3'''
     isvalid = True
@@ -59,17 +59,20 @@ def validate_zip_checksum(s3, s3_bucket_name, s3_path, data_directory_name):
             filename = file
 
     # Get s3 zip hash
-    bucket = s3.Bucket(s3_bucket_name)
-    s3_zip_hash = bucket.get_key(os.join(s3_path, filename)).etag[1:-1]
+    resp = s3_client.head_object(Bucket=s3_bucket_name, Key=os.path.join(s3_path, filename))
+    s3_zip_hash = resp['ETag'].strip('"')
+    logging.debug("Etag of " + os.path.join(data_directory_name, filename) + "is: " + s3_zip_hash)
 
-    # Get dropbox zip hash
-    dropbox_zip_hash = ""
-    md5_hash = hashlib.md5()
-    with open(filename, "rb") as f:
-        # Read and update hash in chunks of 4K
-        for byte_block in iter(lambda: f.read(4096), b""):
-            md5_hash.update(byte_block)
-        dropbox_zip_hash = md5_hash.hexdigest()
+    # Get dropbox zip hash - calculate etag
+    dropbox_zip_hash = None
+    md5_digests = []
+    partsize = 8388608, # aws_cli/boto3
+    with open(os.path.join(data_directory_name, filename), 'rb') as f:
+        for chunk in iter(lambda: f.read(partsize), b''):
+            md5_digests.append(hashlib.md5(chunk).digest())
+    dropbox_zip_hash = hashlib.md5(b''.join(md5_digests)).hexdigest() + '-' + str(len(md5_digests))
+
+    logging.debug("local etag of " + os.path.join(data_directory_name, filename) + "is: " + s3_zip_hash)
 
     # Compare
     if dropbox_zip_hash != s3_zip_hash:
@@ -77,6 +80,7 @@ def validate_zip_checksum(s3, s3_bucket_name, s3_path, data_directory_name):
         msg = "The md5 hash of zip file {} in s3 of {} did not match the md5 of transferred file {}".format(filename, s3_zip_hash, dropbox_zip_hash)
         incorrecthashes.append(msg)
         logging.error(msg)
+    logging.debug("zip checksums match!")
 
     retval = ValidationReturnValue(isvalid, incorrecthashes)
 

@@ -12,6 +12,7 @@ logging.basicConfig(filename=logfile, level=loglevel, format="%(asctime)s:%(leve
 
 def transfer_data(message_data):
     s3 = None
+    s3_client = None
     application_name = ""
     if ('application_name' in message_data):
         application_name = message_data['application_name']
@@ -22,6 +23,10 @@ def transfer_data(message_data):
                 region_name="us-east-1")
         else:
             s3 = boto3.resource('s3',
+                aws_access_key_id=os.getenv("EPADD_AWS_ACCESS_KEY_ID"),
+                aws_secret_access_key=os.getenv("EPADD_AWS_SECRET_ACCESS_KEY"),
+                region_name="us-east-1")
+            s3_client = boto3.client('s3',
                 aws_access_key_id=os.getenv("EPADD_AWS_ACCESS_KEY_ID"),
                 aws_secret_access_key=os.getenv("EPADD_AWS_SECRET_ACCESS_KEY"),
                 region_name="us-east-1")
@@ -59,7 +64,7 @@ def transfer_data(message_data):
 
         try:
             # Type ValidationReturnValue
-            validation_retval: transfer_validation.ValidationReturnValue = transfer_validation.validate_zipped_transfer(s3, message_data)
+            validation_retval: transfer_validation.ValidationReturnValue = transfer_validation.validate_zipped_transfer(s3_client, message_data)
             # Validate transfer
             if not validation_retval.isvalid:
                 msg = "Transfer Validation Failed Gracefully:"
