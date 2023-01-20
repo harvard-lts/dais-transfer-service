@@ -66,7 +66,7 @@ def validate_zip_checksum(s3_client, s3_bucket_name, s3_path, data_directory_nam
     # Get dropbox zip hash - calculate etag
     dropbox_zip_hash = None
     md5_digests = []
-    partsize = 8388608, # aws_cli/boto3
+    partsize = 8388608  # aws_cli/boto3
     with open(os.path.join(data_directory_name, filename), 'rb') as f:
         for chunk in iter(lambda: f.read(partsize), b''):
             md5_digests.append(hashlib.md5(chunk).digest())
