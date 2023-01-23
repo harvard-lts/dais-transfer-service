@@ -22,6 +22,9 @@ def transfer_data(message_data):
                 aws_secret_access_key=os.getenv("DVN_AWS_SECRET_ACCESS_KEY"),
                 region_name="us-east-1")
         else:
+            # TODO: Make creation of s3_client configurable to make adding non-Amazon S3 implementations more flexible
+            # TODO: Refactor code to use only boto client instead of boto3 resource
+            # JIRA Ticket: https://jira.huit.harvard.edu/browse/LTSEPADD-28
             s3 = boto3.resource('s3',
                 aws_access_key_id=os.getenv("EPADD_AWS_ACCESS_KEY_ID"),
                 aws_secret_access_key=os.getenv("EPADD_AWS_SECRET_ACCESS_KEY"),
