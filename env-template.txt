@@ -31,6 +31,8 @@ SUPPLIED_HASH_MAPPING_FILENAME=XXX
 CHECKSUM_ALGORITHM=md5
 #List of required filenames separated by commas.  Use relative paths
 REQUIRED_UNZIPPED_FILES=XXX
+#List of required zip extensions sparated by commas
+ZIP_EXTENSIONS=.zip,.7z
 
 ##For testing
 S3_BUCKET_NAME=XXX
