@@ -49,23 +49,27 @@ def validate_transfer(unzipped_data_direcory, data_directory_name):
 def validate_zip_checksum(s3_client, s3_bucket_name, s3_path, data_directory_name):
     '''Validates the zip that was transferred by checking the
     zip hash against the hash in s3'''
+    zip_file_extensions = os.getenv("ZIP_EXTENSIONS", "")
+    zip_extension_list = zip_file_extensions.rstrip().split(",")
+
     isvalid = True
     incorrecthashes = []
     filename = ""
 
     # Get file
     for file in os.listdir(data_directory_name):
-        if file.endswith(".zip"):
-            filename = file
+        for extension in zip_extension_list:
+            if file.endswith(extension):
+                filename = file
 
     # Get s3 zip hash
     resp = s3_client.head_object(Bucket=s3_bucket_name, Key=os.path.join(s3_path, filename))
     s3_zip_hash = resp['ETag'].strip('"')
-    logging.debug("Etag of " + os.path.join(data_directory_name, filename) + "is: " + s3_zip_hash)
+    logging.debug("Etag of " + os.path.join(data_directory_name, filename) + " is: " + s3_zip_hash)
 
     # Get dropbox zip hash - calculate etag
     dropbox_zip_hash = calculate_etag(data_directory_name, filename)
-    logging.debug("local etag of " + os.path.join(data_directory_name, filename) + "is: " + s3_zip_hash)
+    logging.debug("local etag of " + os.path.join(data_directory_name, filename) + " is: " + s3_zip_hash)
 
     # Compare
     if dropbox_zip_hash != s3_zip_hash:
@@ -122,15 +126,18 @@ def validate_mapping(unzipped_data_direcory):
 
 def validate_required_zipped_file(data_directory_name):
     """Validates that the zip file exist in the transferred dir"""
+    zip_file_extensions = os.getenv("ZIP_EXTENSIONS", "")
+    zip_extension_list = zip_file_extensions.rstrip().split(",")
 
     zip_exist = False
     errormessages = []
     for file in os.listdir(data_directory_name):
-        if file.endswith(".zip"):
-            zip_exist = True
+        for extension in zip_extension_list:
+            if file.endswith(extension):
+                zip_exist = True
 
     if not zip_exist:
-        msg = "Required file {} is missing from unzipped bag".format(data_directory_name)
+        msg = "Required zip file is missing from export at {}".format(data_directory_name)
         errormessages.append(msg)
         logging.error(msg)
 
