@@ -65,11 +65,11 @@ def validate_zip_checksum(s3_client, s3_bucket_name, s3_path, data_directory_nam
     # Get s3 zip hash
     resp = s3_client.head_object(Bucket=s3_bucket_name, Key=os.path.join(s3_path, filename))
     s3_zip_hash = resp['ETag'].strip('"')
-    logging.debug("Etag of " + os.path.join(data_directory_name, filename) + "is: " + s3_zip_hash)
+    logging.debug("Etag of " + os.path.join(data_directory_name, filename) + " is: " + s3_zip_hash)
 
     # Get dropbox zip hash - calculate etag
     dropbox_zip_hash = calculate_etag(data_directory_name, filename)
-    logging.debug("local etag of " + os.path.join(data_directory_name, filename) + "is: " + s3_zip_hash)
+    logging.debug("local etag of " + os.path.join(data_directory_name, filename) + " is: " + s3_zip_hash)
 
     # Compare
     if dropbox_zip_hash != s3_zip_hash:
