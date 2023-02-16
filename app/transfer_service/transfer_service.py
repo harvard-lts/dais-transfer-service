@@ -12,6 +12,7 @@ logging.basicConfig(filename=logfile, level=loglevel, format="%(asctime)s:%(leve
 
 def transfer_data(message_data):
     s3 = None
+    s3_client = None
     application_name = ""
     if ('application_name' in message_data):
         application_name = message_data['application_name']
@@ -21,7 +22,14 @@ def transfer_data(message_data):
                 aws_secret_access_key=os.getenv("DVN_AWS_SECRET_ACCESS_KEY"),
                 region_name="us-east-1")
         else:
+            # TODO: Make creation of s3_client configurable to make adding non-Amazon S3 implementations more flexible
+            # TODO: Refactor code to use only boto client instead of boto3 resource
+            # JIRA Ticket: https://jira.huit.harvard.edu/browse/LTSEPADD-28
             s3 = boto3.resource('s3',
+                aws_access_key_id=os.getenv("EPADD_AWS_ACCESS_KEY_ID"),
+                aws_secret_access_key=os.getenv("EPADD_AWS_SECRET_ACCESS_KEY"),
+                region_name="us-east-1")
+            s3_client = boto3.client('s3',
                 aws_access_key_id=os.getenv("EPADD_AWS_ACCESS_KEY_ID"),
                 aws_secret_access_key=os.getenv("EPADD_AWS_SECRET_ACCESS_KEY"),
                 region_name="us-east-1")
@@ -55,20 +63,20 @@ def transfer_data(message_data):
             logging.exception("Transfer Validation Failed with Exception {}".format(str(e)))
             raise e
 
-    # elif application_name == "ePADD":
-    #
-    #     try:
-    #         # Type ValidationReturnValue
-    #         validation_retval: transfer_validation.ValidationReturnValue = transfer_validation.validate_zipped_transfer(s3, message_data)
-    #         # Validate transfer
-    #         if not validation_retval.isvalid:
-    #             msg = "Transfer Validation Failed Gracefully:"
-    #             msg = msg + "\n" + ','.join(validation_retval.get_error_messages())
-    #             logging.error(msg)
-    #             raise ValidationException(msg)
-    #     except ValidationException as e:
-    #         logging.exception("Transfer Validation Failed with Exception {}".format(str(e)))
-    #         raise e
+    elif application_name == "ePADD":
+
+        try:
+            # Type ValidationReturnValue
+            validation_retval: transfer_validation.ValidationReturnValue = transfer_validation.validate_zipped_transfer(s3_client, message_data)
+            # Validate transfer
+            if not validation_retval.isvalid:
+                msg = "Transfer Validation Failed Gracefully:"
+                msg = msg + "\n" + ','.join(validation_retval.get_error_messages())
+                logging.error(msg)
+                raise ValidationException(msg)
+        except ValidationException as e:
+            logging.exception("Transfer Validation Failed with Exception {}".format(str(e)))
+            raise e
 
     #Notify transfer success
     transfer_status = mqutils.TransferStatus(message_data["package_id"], "success", dest_path)

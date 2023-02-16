@@ -2,7 +2,8 @@ import logging, os, os.path, boto3, sys, pytest
 sys.path.append('app/transfer_service')
 import transfer_service.transfer_service as transfer_service
 import transfer_helper
-from transfer_service.transferexception import TransferException 
+from transfer_service.transferexception import TransferException
+import transfer_service.transfer_validation as transfer_validation
 from botocore.client import ClientError
 
 logging.basicConfig(format='%(message)s')
@@ -39,6 +40,11 @@ def test_perform_epadd_transfer():
             aws_access_key_id=os.getenv("EPADD_AWS_ACCESS_KEY_ID"),
             aws_secret_access_key=os.getenv("EPADD_AWS_SECRET_ACCESS_KEY"),
             region_name="us-east-1")
+
+    s3_client = boto3.client('s3',
+            aws_access_key_id=os.getenv("EPADD_AWS_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.getenv("EPADD_AWS_SECRET_ACCESS_KEY"),
+            region_name="us-east-1")
      
     s3_bucket="epadd-export-dev" 
     #Upload the data to s3 to test the dropbox transfer
@@ -52,9 +58,12 @@ def test_perform_epadd_transfer():
     transfer_service.perform_transfer(s3, s3_bucket, s3_path, dest_path)
        
     assert os.path.exists(dest_path)
+
+    transfer_validation.validate_zip_checksum(s3_client, s3_bucket, s3_path, dest_path)
        
     #cleanup the data that was moved to the dropbox
     transfer_helper.cleanup_dropbox(dest_path)
+
      
 def test_dvn_cleanup_s3():
     '''Tests to make sure the s3 cleanup method works'''
