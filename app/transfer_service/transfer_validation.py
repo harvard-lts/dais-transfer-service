@@ -69,7 +69,7 @@ def validate_zip_checksum(s3_client, s3_bucket_name, s3_path, data_directory_nam
 
     # Get dropbox zip hash - calculate etag
     # calculate_etag(data_directory_name, filename)
-    dropbox_zip_hash = calculate_checksum(os.path.join(data_directory_name, filename))
+    dropbox_zip_hash = hashlib.md5(open(os.path.join(data_directory_name, filename),'rb').read()).hexdigest()
     logging.debug("local etag of " + os.path.join(data_directory_name, filename) + " is: " + s3_zip_hash)
 
     # Compare
