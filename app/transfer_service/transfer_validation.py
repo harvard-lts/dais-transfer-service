@@ -67,8 +67,7 @@ def validate_zip_checksum(s3_client, s3_bucket_name, s3_path, data_directory_nam
     s3_zip_hash = resp['ETag'].strip('"')
     logging.debug("Etag of " + os.path.join(data_directory_name, filename) + " is: " + s3_zip_hash)
 
-    # Get dropbox zip hash - calculate etag
-    # calculate_etag(data_directory_name, filename)
+    # Get dropbox zip hash - this is not an etag, it is a md5 checksum
     dropbox_zip_hash = hashlib.md5(open(os.path.join(data_directory_name, filename),'rb').read()).hexdigest()
     logging.debug("local etag of " + os.path.join(data_directory_name, filename) + " is: " + s3_zip_hash)
 
@@ -182,11 +181,3 @@ def calculate_checksum(filepath):
         return hashlib.sha512(open(filepath,'rb').read()).hexdigest()
     #default to md5
     return hashlib.md5(open(filepath,'rb').read()).hexdigest()
-
-def calculate_etag(filepath, filename):
-    md5_digests = []
-    partsize = 8388608  # aws_cli/boto3
-    with open(os.path.join(filepath, filename), 'rb') as f:
-        for chunk in iter(lambda: f.read(partsize), b''):
-            md5_digests.append(hashlib.md5(chunk).digest())
-    return hashlib.md5(b''.join(md5_digests)).hexdigest() + '-' + str(len(md5_digests))
