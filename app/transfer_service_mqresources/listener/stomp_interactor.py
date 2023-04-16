@@ -7,8 +7,8 @@ import os
 from abc import ABC, abstractmethod
 
 import stomp
-from mqresources.listener.mq_connection_exception import MqConnectionException
-from mqresources.listener.mq_connection_params import MqConnectionParams
+from transfer_service_mqresources.listener.mq_connection_exception import MqConnectionException
+from transfer_service_mqresources.listener.mq_connection_params import MqConnectionParams
 
 
 class StompInteractor(ABC):
@@ -16,10 +16,7 @@ class StompInteractor(ABC):
     __STOMP_CONN_TIMEOUT_MS = 5000
 
     def __init__(self) -> None:
-        logfile=os.getenv('LOGFILE_PATH', 'dais_transfer_service')
-        loglevel=os.getenv('LOGLEVEL', 'WARNING')
-        logging.basicConfig(filename=logfile, level=loglevel, format="%(asctime)s:%(levelname)s:%(message)s")
-        self._logger = logging.getLogger()
+        self._logger = logging.getLogger('transfer-service')
 
     def _create_mq_connection(self) -> stomp.Connection:
         """

@@ -7,7 +7,7 @@ import time, boto3
 from collections import OrderedDict
 from unittest.mock import patch
 
-sys.path.append('app/mqresources')
+sys.path.append('app/transfer_service_mqresources')
 sys.path.append('app/transfer_service')
 import mqutils
 from listener.transfer_ready_queue_listener import TransferReadyQueueListener

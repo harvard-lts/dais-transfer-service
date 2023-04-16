@@ -8,7 +8,7 @@ import os
 from abc import abstractmethod, ABC
 
 import stomp
-from mqresources.listener.stomp_interactor import StompInteractor
+from transfer_service_mqresources.listener.stomp_interactor import StompInteractor
 from stomp.utils import Frame
 from tenacity import retry, before_log, wait_exponential, stop_after_attempt
 
@@ -18,8 +18,6 @@ class StompListenerBase(stomp.ConnectionListener, StompInteractor, ABC):
     __STOMP_CONN_MAX_ATTEMPTS = 36
 
     __ACK_CLIENT_INDIVIDUAL = "client-individual"
-
-    loglevel = loglevel = os.getenv('LOGLEVEL', 'WARNING')
 
     def __init__(self) -> None:
         super().__init__()
@@ -89,9 +87,6 @@ class StompListenerBase(stomp.ConnectionListener, StompInteractor, ABC):
         """
         self._logger.info("Setting message with id {} as unacknowledged...".format(message_id))
         self._connection.nack(id=message_id, subscription=message_subscription)
-        logfile=os.getenv('LOGFILE_PATH', 'dais_transfer_service')
-        loglevel=os.getenv('LOGLEVEL', 'WARNING')
-        logging.basicConfig(filename=logfile, level=loglevel, format="%(asctime)s:%(levelname)s:%(message)s")
 
     @retry(
         wait=wait_exponential(
@@ -100,7 +95,7 @@ class StompListenerBase(stomp.ConnectionListener, StompInteractor, ABC):
             max=__STOMP_CONN_MAX_RETRY_WAITING_SECONDS
         ),
         stop=stop_after_attempt(__STOMP_CONN_MAX_ATTEMPTS),
-        before=before_log(logging.getLogger(), logging.WARNING)
+        before=before_log(logging.getLogger('transfer-service'), logging.WARNING)
     )
 
     def __create_subscribed_mq_connection(self) -> stomp.Connection:

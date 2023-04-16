@@ -36,3 +36,11 @@ ZIP_EXTENSIONS=.zip,.7z,.gz
 
 ##For testing
 S3_BUCKET_NAME=XXX
+
+#Notify queuing
+MQ_HOST=b-e57fc418-9916-406e-882b-6c49fa1e2ee2-1.mq.us-east-1.amazonaws.com
+MQ_PORT=61614
+MQ_USER=ims
+MQ_PASSWORD=XXX
+QUEUE_NAME=/queue/dais-notify
+DEFAULT_EMAIL_RECIPIENT=dts@hu.onmicrosoft.com
