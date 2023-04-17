@@ -64,7 +64,6 @@ def transfer_data(message_data):
             raise e
 
     #elif application_name == "ePADD":
-
 #         try:
 #             # Type ValidationReturnValue
 #             validation_retval: transfer_validation.ValidationReturnValue = transfer_validation.validate_zipped_transfer(s3_client, message_data)
