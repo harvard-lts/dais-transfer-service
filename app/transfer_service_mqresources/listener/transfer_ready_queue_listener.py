@@ -2,9 +2,9 @@ import os
 
 import transfer_service.transfer_ready_validation as transfer_ready_validation
 import transfer_service.transfer_service as transfer_service
-from mqresources import mqutils
-from mqresources.listener.mq_connection_params import MqConnectionParams
-from mqresources.listener.stomp_listener_base import StompListenerBase
+from transfer_service_mqresources import mqutils
+from transfer_service_mqresources.listener.mq_connection_params import MqConnectionParams
+from transfer_service_mqresources.listener.stomp_listener_base import StompListenerBase
 
 
 class TransferReadyQueueListener(StompListenerBase):
@@ -44,11 +44,31 @@ class TransferReadyQueueListener(StompListenerBase):
                 'TRANSFERRING DATA {} to {}'.format(message_body['s3_path'], message_body['destination_path'])
             )
             transfer_service.transfer_data(message_body)
-        except Exception:
+        except ValidationException as e:
             transfer_status = mqutils.TransferStatus(
                 message_body.get("package_id"),
                 "failure",
                 message_body.get('destination_path')
             )
             mqutils.notify_transfer_status_message(transfer_status)
-            self._logger.exception("validation failed so transfer was not completed")
+            msg = "Validation failed so transfer was not completed"
+            exception_msg = traceback.format_exc()
+            body = msg + "\n" + exception_msg
+            notifier.send_error_notification(str(e), body)
+        except TransferException as e:
+            transfer_status = mqutils.TransferStatus(
+                message_body.get("package_id"),
+                "failure",
+                message_body.get('destination_path')
+            )
+            mqutils.notify_transfer_status_message(transfer_status)
+            msg = str(e)
+            exception_msg = traceback.format_exc()
+            body = msg + "\n" + exception_msg
+            notifier.send_error_notification(str(e), body)
+        except Exception as e:
+            msg = str(e)
+            exception_msg = traceback.format_exc()
+            body = msg + "\n" + exception_msg
+            notifier.send_error_notification(str(e), body)
+

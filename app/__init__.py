@@ -1,16 +1,14 @@
 import logging
 import os
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 
-import mqresources.mqutils as mqutils
+import transfer_service_mqresources.mqutils as mqutils
 from flask import Flask
 from healthcheck import HealthCheck, EnvironmentDump
-from mqresources.listener.transfer_ready_queue_listener import TransferReadyQueueListener
+from transfer_service_mqresources.listener.transfer_ready_queue_listener import TransferReadyQueueListener
 
-LOG_FILE_DEFAULT_PATH = "hdc3a_transfer_service"
-LOG_FILE_DEFAULT_LEVEL = logging.WARNING
-LOG_FILE_MAX_SIZE_BYTES = 2 * 1024 * 1024
 LOG_FILE_BACKUP_COUNT = 1
+LOG_ROTATION = "midnight"
 
 
 # App factory
@@ -53,22 +51,24 @@ def create_app():
     app.add_url_rule("/environment", "environment", view_func=envdump.run)
 
     # Initializing queue listener
-    logging.debug("Creating Transfer Ready queue listener...")
+    logging.getLogger('transfer-service').debug("Creating Transfer Ready queue listener...")
     TransferReadyQueueListener()
 
     return app
 
 
 def configure_logger():
-    log_file_path = os.getenv('LOGFILE_PATH', LOG_FILE_DEFAULT_PATH)
-    logger = logging.getLogger()
-
-    file_handler = RotatingFileHandler(
+    log_level = os.getenv("LOGLEVEL", "WARNING")
+    log_file_path = os.getenv("LOGFILE_PATH", "/home/appuser/epadd-curator-app/logs/transfer_service.log")
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
+    file_handler = TimedRotatingFileHandler(
         filename=log_file_path,
-        maxBytes=LOG_FILE_MAX_SIZE_BYTES,
+        when=LOG_ROTATION,
         backupCount=LOG_FILE_BACKUP_COUNT
     )
+    logger = logging.getLogger('transfer-service')
+        
     logger.addHandler(file_handler)
-
-    log_level = os.getenv('LOGLEVEL', LOG_FILE_DEFAULT_LEVEL)
+    file_handler.setFormatter(formatter)
     logger.setLevel(log_level)
