@@ -1,10 +1,7 @@
 import os, os.path, logging, hashlib, re, glob
 from transfer_service.transferexception import ValidationException 
 
-logfile=os.getenv('LOGFILE_PATH', 'hdc3a_transfer_service')
-loglevel=os.getenv('LOGLEVEL', 'WARNING')
-logging.basicConfig(filename=logfile, level=loglevel, format="%(asctime)s:%(levelname)s:%(message)s")
-
+logger = logging.getLogger('transfer-service')
 checksum_algorithm=os.getenv("CHECKSUM_ALGORITHM", "md5")
 
 class ValidationReturnValue:
@@ -65,19 +62,20 @@ def validate_zip_checksum(s3_client, s3_bucket_name, s3_path, data_directory_nam
     # Get s3 zip hash
     resp = s3_client.head_object(Bucket=s3_bucket_name, Key=os.path.join(s3_path, filename))
     s3_zip_hash = resp['ETag'].strip('"')
-    logging.debug("Etag of " + os.path.join(data_directory_name, filename) + " is: " + s3_zip_hash)
+    logger.debug("Etag of " + os.path.join(data_directory_name, filename) + " is: " + s3_zip_hash)
 
     # Get dropbox zip hash - this is not an etag, it is a md5 checksum
     dropbox_zip_hash = hashlib.md5(open(os.path.join(data_directory_name, filename),'rb').read()).hexdigest()
-    logging.debug("local etag of " + os.path.join(data_directory_name, filename) + " is: " + s3_zip_hash)
+    logger.debug("local etag of " + os.path.join(data_directory_name, filename) + " is: " + s3_zip_hash)
 
     # Compare
     if dropbox_zip_hash != s3_zip_hash:
         isvalid = False
         msg = "The md5 hash of zip file {} in s3 of {} did not match the md5 of transferred file {}".format(filename, s3_zip_hash, dropbox_zip_hash)
         incorrecthashes.append(msg)
-        logging.error(msg)
-    logging.debug("zip checksums match!")
+        logger.error(msg)
+    else: 
+        logger.debug("zip checksums match!")
 
     retval = ValidationReturnValue(isvalid, incorrecthashes)
 
@@ -110,13 +108,13 @@ def validate_mapping(unzipped_data_direcory):
                 
             if provided_hashvalue != calc_hashvalue:
                 incorrecthashes.append("File hash is incorrect for {}. Expected {} but received {}".format(filepath, provided_hashvalue, calc_hashvalue))
-                logging.error("File hash is incorrect for {}. Expected {} but received {}".format(filepath, provided_hashvalue, calc_hashvalue))
+                logger.error("File hash is incorrect for {}. Expected {} but received {}".format(filepath, provided_hashvalue, calc_hashvalue))
                 isvalid = False
                 
-            logging.debug(provided_hashvalue)
-            logging.debug(filepath)
-            logging.debug(calc_hashvalue)
-            logging.debug("\n")
+            logger.debug(provided_hashvalue)
+            logger.debug(filepath)
+            logger.debug(calc_hashvalue)
+            logger.debug("\n")
             line_no = line_no + 1
             
     retval = ValidationReturnValue(isvalid, incorrecthashes)
@@ -139,7 +137,7 @@ def validate_required_zipped_file(data_directory_name):
     if not zip_exist:
         msg = "Required zip file is missing from export at {}".format(data_directory_name)
         errormessages.append(msg)
-        logging.error(msg)
+        logger.error(msg)
 
     retval = ValidationReturnValue(zip_exist, errormessages)
 
@@ -159,7 +157,7 @@ def validate_required_unzipped_files(unzipped_data_direcory):
             required_files_exist = False
             msg = "Required file {} is missing from unzipped bag".format(filepath)
             errormessages.append(msg)
-            logging.error(msg)
+            logger.error(msg)
     
     retval = ValidationReturnValue(required_files_exist, errormessages)
     

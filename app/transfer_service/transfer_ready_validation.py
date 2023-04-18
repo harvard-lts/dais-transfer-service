@@ -1,35 +1,27 @@
 import os, os.path, json, jsonschema, logging
+from transfer_service.transferexception import ValidationException
 
-logfile=os.getenv('LOGFILE_PATH', 'hdc3a_transfer_service')
-loglevel=os.getenv('LOGLEVEL', 'WARNING')
-logging.basicConfig(filename=logfile, level=loglevel, format="%(asctime)s:%(levelname)s:%(message)s")
-
+logger = logging.getLogger('transfer-service')
 def validate_json_schema(json_data):
 
     app_path = os.path.abspath(os.path.dirname(__file__))
     schemasdir = os.path.join(app_path, "schemas")
     
-    logging.debug("Schemas dir: {}".format(schemasdir))
+    logger.debug("Schemas dir: {}".format(schemasdir))
     
     if json_data is None:
-        raise Exception("Missing JSON data in validate_json_schema")
+        raise ValidationException("Missing JSON data in validate_json_schema")
         
     try:
         with open('{}/{}.json'.format(schemasdir, 'transfer_ready')) as json_file:
             json_model = json.load(json_file)
     except Exception as e:
-        logging.exception("Unable to get json schema model.")
-        raise e
+       raise ValidationException("Unable to get json schema model.") from e
         
     try:
         jsonschema.validate(json_data, json_model)
     except json.decoder.JSONDecodeError as e:
-        logging.exception("Invalid JSON format")
-        raise e
+        raise ValidationException("Invalid JSON format") from e
     except jsonschema.exceptions.ValidationError as e:
-        logging.exception("Invalid JSON schema:")
-        raise e
-    except Exception as e:
-        logging.exception("Unable to validate json model.")
-        raise e
+        raise ValidationException("Invalid JSON schema") from e
 

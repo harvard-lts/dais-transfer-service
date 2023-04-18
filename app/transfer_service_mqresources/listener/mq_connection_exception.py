@@ -1,4 +1,4 @@
-from mqresources.listener.mq_exception import MqException
+from transfer_service_mqresources.listener.mq_exception import MqException
 
 
 class MqConnectionException(MqException):

@@ -5,10 +5,10 @@ import time
 from typing import Optional
 
 import stomp
-from mqresources import mqutils
+from transfer_service_mqresources import mqutils
 from stomp.utils import Frame
 
-sys.path.append('app/mqresources')
+sys.path.append('app/transfer_service_mqresources')
 
 logging.basicConfig(format='%(message)s')
 
