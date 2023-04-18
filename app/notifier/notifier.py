@@ -4,7 +4,7 @@ import os, logging
 def send_error_notification(subject, body, recipients=None):
     logging.getLogger('transfer-service').error(body)
     queue = os.getenv("EMAIL_QUEUE_NAME")
-    subject = "DTS: " + subject   
+    subject = "DAIS Transfer Service: " + subject   
     default_email_recipient = os.getenv("DEFAULT_EMAIL_RECIPIENT")
     if recipients is None:
         recipients = default_email_recipient
