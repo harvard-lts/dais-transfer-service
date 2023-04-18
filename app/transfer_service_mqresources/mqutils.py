@@ -48,7 +48,7 @@ def notify_transfer_status_message(transfer_status, queue=None):
     if (queue is None):
         transfer_queue = os.getenv('TRANSFER_QUEUE_PUBLISH_NAME')
     else:
-            transfer_queue = queue
+        transfer_queue = queue
         
     admin_md = {"original_queue" : transfer_queue, "retry_count":0}
     admin_md.update(transfer_status.additional_admin_metadata)

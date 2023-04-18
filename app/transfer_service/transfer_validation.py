@@ -74,7 +74,8 @@ def validate_zip_checksum(s3_client, s3_bucket_name, s3_path, data_directory_nam
         msg = "The md5 hash of zip file {} in s3 of {} did not match the md5 of transferred file {}".format(filename, s3_zip_hash, dropbox_zip_hash)
         incorrecthashes.append(msg)
         logger.error(msg)
-    logger.debug("zip checksums match!")
+    else: 
+        logger.debug("zip checksums match!")
 
     retval = ValidationReturnValue(isvalid, incorrecthashes)
 
