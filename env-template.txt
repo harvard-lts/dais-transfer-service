@@ -6,6 +6,8 @@ PYTHONPATH=/home/appuser/app
 LOGFILE_PATH=/home/appuser/logs/hdc3a_transfer_service.log
 #Choose from CRITICAL, ERROR, WARNING, INFO, DEBUG
 LOGLEVEL=DEBUG
+APP_LOG_LEVEL=DEBUG
+CELERY_LOG_LEVEL=DEBUG
 
 VERSION=XXX
 
