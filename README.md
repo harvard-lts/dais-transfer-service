@@ -30,7 +30,7 @@ docker exec -it dais-transfer-service bash
 pytest
 ```
 
-### Invoking the task manually
+## Invoking the task manually
 
 - Clone this repo from github 
 
