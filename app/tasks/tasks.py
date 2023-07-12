@@ -4,6 +4,7 @@ import traceback
 import transfer_service.transfer_ready_validation as transfer_ready_validation
 import transfer_service.transfer_service as transfer_service
 import notifier.notifier as notifier
+import logging
 
 app = Celery()
 app.config_from_object('celeryconfig')
@@ -15,7 +16,9 @@ def transfer_data(message_body):
     logger.debug("Message Body: {}".format(message_body))
     # Do not do the validation and transfer if dry_run is set
     if "dry_run" in message_body:
-        return "hello"
+        app.send_task("tasks.tasks.do_task", args=[{"dryrun": "for transfer_data"}], kwargs={},
+            queue=os.getenv("TRANSFER_PUBLISH_QUEUE_NAME") + "-dryrun")
+        return
 
     try:
         # Validate json
