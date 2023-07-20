@@ -11,6 +11,9 @@ CELERY_LOG_LEVEL=DEBUG
 
 VERSION=XXX
 
+TRANSFER_TASK_NAME=transfer_service.tasks.transfer_data
+TRANSFER_STATUS_TASK_NAME=dims.tasks.handle_transfer_status
+
 TRANSFER_CONSUME_QUEUE_NAME=transfer-ready
 TRANSFER_PUBLISH_QUEUE_NAME=dropbox-transfer-status
 BROKER_URL=XXX
