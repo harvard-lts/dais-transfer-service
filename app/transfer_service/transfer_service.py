@@ -4,6 +4,10 @@ import transfer_service.transfer_ready_validation as transfer_ready_validation
 from transfer_service.transferexception import TransferException 
 from transfer_service.transferexception import ValidationException 
 import transfer_service.transfer_validation as transfer_validation 
+from celery import Celery
+
+app = Celery()
+app.config_from_object('celeryconfig')
 
 logger = logging.getLogger('transfer-service')
 def transfer_data(message_data):
