@@ -78,7 +78,7 @@ def transfer_data(message_data):
         "destination_path": dest_path,
         "admin_metadata": {
             "original_queue": os.getenv("TRANSFER_PUBLISH_QUEUE_NAME"),
-            "task_name": transfer_task,
+            "task_name": transfer_status_task,
             "retry_count": 0
         }
     }
