@@ -11,6 +11,9 @@ CELERY_LOG_LEVEL=DEBUG
 
 VERSION=XXX
 
+MESSAGE_EXPIRATION_MS=5000
+MESSAGE_MAX_RETRIES=3
+
 TRANSFER_TASK_NAME=transfer_service.tasks.transfer_data
 TRANSFER_STATUS_TASK_NAME=dims.tasks.handle_transfer_status
 

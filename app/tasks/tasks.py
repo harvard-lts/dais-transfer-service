@@ -13,8 +13,9 @@ logger = logging.getLogger('transfer-service')
 
 transfer_task = os.getenv('TRANSFER_TASK_NAME', 'transfer_service.tasks.transfer_data')
 transfer_status_task = os.getenv('TRANSFER_STATUS_TASK_NAME', 'dims.tasks.handle_transfer_status')
+retries = os.getenv('MESSAGE_MAX_RETRIES', 3)
 
-@app.task(serializer='json', name=transfer_task)
+@app.task(serializer='json', name=transfer_task, max_retries=retries)
 def transfer_data(message_body):
     logger.debug("Message Body: {}".format(message_body))
     # Do not do the validation and transfer if dry_run is set
