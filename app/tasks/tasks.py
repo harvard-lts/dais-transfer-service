@@ -4,6 +4,8 @@ import traceback
 import transfer_service.transfer_ready_validation as transfer_ready_validation
 import transfer_service.transfer_service as transfer_service
 import notifier.notifier as notifier
+from transfer_service.transferexception import ValidationException
+from transfer_service.transferexception import TransferException
 import logging
 
 app = Celery()
