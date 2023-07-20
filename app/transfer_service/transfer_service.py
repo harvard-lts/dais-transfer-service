@@ -71,16 +71,18 @@ def transfer_data(message_data):
 #             raise e
 
     package_id = message_data["package_id"]
+    transfer_status_task = os.getenv('TRANSFER_STATUS_TASK_NAME', 'dims.tasks.handle_transfer_status')
     msg_json = {
         "package_id": package_id,
         "transfer_status": "success",
         "destination_path": dest_path,
         "admin_metadata": {
             "original_queue": os.getenv("TRANSFER_PUBLISH_QUEUE_NAME"),
+            "task_name": transfer_task,
             "retry_count": 0
         }
     }
-    app.send_task("tasks.tasks.do_task", args=[msg_json], kwargs={},
+    app.send_task(transfer_status_task, args=[msg_json], kwargs={},
             queue=os.getenv("TRANSFER_PUBLISH_QUEUE_NAME")) 
             
     #Cleanup s3

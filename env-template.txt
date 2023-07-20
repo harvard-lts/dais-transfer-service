@@ -11,8 +11,8 @@ CELERY_LOG_LEVEL=DEBUG
 
 VERSION=XXX
 
-TRANSFER_CONSUME_QUEUE_NAME=dropbox-transfer-status
-TRANSFER_PUBLISH_QUEUE_NAME=transfer-ready
+TRANSFER_CONSUME_QUEUE_NAME=transfer-ready
+TRANSFER_PUBLISH_QUEUE_NAME=dropbox-transfer-status
 BROKER_URL=XXX
 
 #Read-Write Credentials

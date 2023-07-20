@@ -11,7 +11,10 @@ app.config_from_object('celeryconfig')
 
 logger = logging.getLogger('transfer-service')
 
-@app.task(serializer='json', name='transfer_service.tasks.transfer_data')
+transfer_task = os.getenv('TRANSFER_TASK_NAME', 'transfer_service.tasks.transfer_data')
+transfer_status_task = os.getenv('TRANSFER_STATUS_TASK_NAME', 'dims.tasks.handle_transfer_status')
+
+@app.task(serializer='json', name=transfer_task)
 def transfer_data(message_body):
     logger.debug("Message Body: {}".format(message_body))
     # Do not do the validation and transfer if dry_run is set
@@ -55,10 +58,11 @@ def send_error_notifications(message_start, message_body, exception, exception_m
         "destination_path": message_body.get('destination_path'),
         "admin_metadata": {
             "original_queue": os.getenv("TRANSFER_PUBLISH_QUEUE_NAME"),
+            "task_name": transfer_task,
             "retry_count": 0
         }
     }
-    app.send_task("tasks.tasks.do_task", args=[msg_json], kwargs={},
+    app.send_task(transfer_status_task, args=[msg_json], kwargs={},
             queue=os.getenv("TRANSFER_PUBLISH_QUEUE_NAME"))
     body = message_start + "\n" + exception_msg
     notifier.send_error_notification(str(exception), body, emails)
