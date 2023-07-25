@@ -7,6 +7,7 @@ import notifier.notifier as notifier
 from transfer_service.transferexception import ValidationException
 from transfer_service.transferexception import TransferException
 import logging
+from celery.exceptions import Reject
 
 app = Celery()
 app.config_from_object('celeryconfig')
@@ -17,8 +18,10 @@ transfer_task = os.getenv('TRANSFER_TASK_NAME', 'transfer_service.tasks.transfer
 transfer_status_task = os.getenv('TRANSFER_STATUS_TASK_NAME', 'dims.tasks.handle_transfer_status')
 retries = os.getenv('MESSAGE_MAX_RETRIES', 3)
 
-@app.task(serializer='json', name=transfer_task, max_retries=retries)
+@app.task(serializer='json', name=transfer_task, max_retries=retries, acks_late=True)
 def transfer_data(message_body):
+    if "dlq_testing" in message_body:
+        raise Reject("reject", requeue=False)
     logger.debug("Message Body: {}".format(message_body))
     # Do not do the validation and transfer if dry_run is set
     if "dry_run" in message_body:
