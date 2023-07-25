@@ -18,7 +18,7 @@ transfer_task = os.getenv('TRANSFER_TASK_NAME', 'transfer_service.tasks.transfer
 transfer_status_task = os.getenv('TRANSFER_STATUS_TASK_NAME', 'dims.tasks.handle_transfer_status')
 retries = int(os.getenv('MESSAGE_MAX_RETRIES', 3))
 
-@app.task(bind=True, serializer='json', name=transfer_task, max_retries=retries, acks_late=True)
+@app.task(bind=True, serializer='json', name=transfer_task, max_retries=retries, acks_late=True, autoretry_for=(Exception,))
 def transfer_data(self, message_body):
     if "dlq_testing" in message_body:
         if self.request.retries < retries:
@@ -35,9 +35,6 @@ def transfer_data(self, message_body):
             queue=os.getenv("TRANSFER_PUBLISH_QUEUE_NAME") + "-dryrun")
         return
 
-    #If too many retries happened
-    if self.request.retries == retries: 
-        send_max_retry_notifications(message)   
     
     try:
         # Validate json
@@ -53,20 +50,20 @@ def transfer_data(self, message_body):
         exception_msg = traceback.format_exc()
         failureEmail = message_body["admin_metadata"]["failureEmail"]
         exception_msg = traceback.format_exc()
-        send_error_notifications(msg, message_body, e, exception_msg, failureEmail)
+        send_error_notifications(msg, message_body, e, exception_msg, failureEmail, self.request.retries)
     except TransferException as e:
         msg = str(e)
         exception_msg = traceback.format_exc()
         failureEmail = message_body["admin_metadata"]["failureEmail"]
         exception_msg = traceback.format_exc()
-        send_error_notifications(msg, message_body, e, exception_msg, failureEmail)
+        send_error_notifications(msg, message_body, e, exception_msg, failureEmail, self.request.retries)
     except Exception as e:
         msg = str(e)
         exception_msg = traceback.format_exc()
         body = msg + "\n" + exception_msg
-        send_error_notifications(msg, message_body, e, exception_msg)
+        send_error_notifications(msg, message_body, e, exception_msg, None, self.request.retries)
 
-def send_error_notifications(message_start, message_body, exception, exception_msg, emails=None):
+def send_error_notifications(message_start, message_body, exception, exception_msg, emails=None, num_retries=0):
     package_id = message_body.get("package_id")
     msg_json = {
         "package_id": package_id,
@@ -82,6 +79,9 @@ def send_error_notifications(message_start, message_body, exception, exception_m
             queue=os.getenv("TRANSFER_PUBLISH_QUEUE_NAME"))
     body = message_start + "\n" + exception_msg
     notifier.send_error_notification(str(exception), body, emails)
+    #If too many retries happened
+    if num_retries == retries: 
+        send_max_retry_notifications(message_body)
     
 def send_max_retry_notifications(message_body):
     package_id = message_body.get("package_id")
