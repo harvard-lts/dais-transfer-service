@@ -11,7 +11,7 @@ CELERY_LOG_LEVEL=DEBUG
 
 VERSION=XXX
 
-MESSAGE_EXPIRATION_MS=5000
+MESSAGE_EXPIRATION_MS=3600000
 MESSAGE_MAX_RETRIES=3
 
 TRANSFER_TASK_NAME=transfer_service.tasks.transfer_data
@@ -20,6 +20,9 @@ TRANSFER_STATUS_TASK_NAME=dims.tasks.handle_transfer_status
 TRANSFER_CONSUME_QUEUE_NAME=transfer-ready
 TRANSFER_PUBLISH_QUEUE_NAME=dropbox-transfer-status
 BROKER_URL=XXX
+
+DLQ_EXCHANGE_NAME=dais-dead-letter-exchange
+DLQ_QUEUE_NAME=dais-dead-letter-queue
 
 #Read-Write Credentials
 DVN_AWS_ACCESS_KEY_ID=XXX
