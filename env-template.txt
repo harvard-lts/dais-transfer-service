@@ -21,6 +21,9 @@ TRANSFER_CONSUME_QUEUE_NAME=transfer-ready
 TRANSFER_PUBLISH_QUEUE_NAME=dropbox-transfer-status
 BROKER_URL=XXX
 
+DLQ_EXCHANGE_NAME=dais-dead-letter-exchange
+DLQ_QUEUE_NAME=dais-dead-letter-queue
+
 #Read-Write Credentials
 DVN_AWS_ACCESS_KEY_ID=XXX
 DVN_AWS_SECRET_ACCESS_KEY=XXX
