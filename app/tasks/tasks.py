@@ -16,12 +16,18 @@ logger = logging.getLogger('transfer-service')
 
 transfer_task = os.getenv('TRANSFER_TASK_NAME', 'transfer_service.tasks.transfer_data')
 transfer_status_task = os.getenv('TRANSFER_STATUS_TASK_NAME', 'dims.tasks.handle_transfer_status')
-retries = os.getenv('MESSAGE_MAX_RETRIES', 3)
+retries = int(os.getenv('MESSAGE_MAX_RETRIES', 3))
 
-@app.task(serializer='json', name=transfer_task, max_retries=retries, acks_late=True)
-def transfer_data(message_body):
+@app.task(bind=True, serializer='json', name=transfer_task, max_retries=retries, acks_late=True)
+def transfer_data(self, message_body):
     if "dlq_testing" in message_body:
-        raise Reject("reject", requeue=False)
+        if self.request.retries < retries:
+            logger.debug("retrying Transfer Service")
+            self.retry(countdown=3)
+        else:
+            logger.debug("Sending to DLQ")
+            send_max_retry_notifications(message_body)
+            raise Reject("reject", requeue=False)
     logger.debug("Message Body: {}".format(message_body))
     # Do not do the validation and transfer if dry_run is set
     if "dry_run" in message_body:
@@ -29,6 +35,10 @@ def transfer_data(message_body):
             queue=os.getenv("TRANSFER_PUBLISH_QUEUE_NAME") + "-dryrun")
         return
 
+    #If too many retries happened
+    if self.request.retries == retries: 
+        send_max_retry_notifications(message)   
+    
     try:
         # Validate json
         transfer_ready_validation.validate_json_schema(message_body)
@@ -72,3 +82,21 @@ def send_error_notifications(message_start, message_body, exception, exception_m
             queue=os.getenv("TRANSFER_PUBLISH_QUEUE_NAME"))
     body = message_start + "\n" + exception_msg
     notifier.send_error_notification(str(exception), body, emails)
+    
+def send_max_retry_notifications(message_body):
+    package_id = message_body.get("package_id")
+    msg_json = {
+        "package_id": package_id,
+        "transfer_status": "failure",
+        "destination_path": message_body.get('destination_path'),
+        "admin_metadata": {
+            "original_queue": os.getenv("TRANSFER_PUBLISH_QUEUE_NAME"),
+            "task_name": transfer_task,
+            "retry_count": 0
+        }
+    }
+    
+    subject = "Maximum resubmitting retries reached for message with id {}.".format(message_body.get("package_id"))
+    body = "Maximum resubmitting retries reached for message with id {}.\n\n" \
+        "The message has been consumed and will not be resubmitted again.".format(message_body.get("package_id"))
+    notifier.send_error_notification(subject, body)
