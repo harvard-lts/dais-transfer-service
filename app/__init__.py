@@ -2,10 +2,8 @@ import logging
 import os
 from logging.handlers import TimedRotatingFileHandler
 
-import transfer_service_mqresources.mqutils as mqutils
 from flask import Flask
 from healthcheck import HealthCheck, EnvironmentDump
-from transfer_service_mqresources.listener.transfer_ready_queue_listener import TransferReadyQueueListener
 
 LOG_FILE_BACKUP_COUNT = 1
 LOG_ROTATION = "midnight"
@@ -27,13 +25,6 @@ def create_app():
                               include_os=includeenvdump,
                               include_process=includeenvdump)
 
-    # add a check for the process mq connection
-    def checktransfermqconnection():
-        connection_params = mqutils.get_transfer_mq_connection()
-        if connection_params.conn is None:
-            return False, "transfer mq connection failed"
-        connection_params.conn.disconnect()
-        return True, "transfer mq connection ok"
 
     # add your own data to the environment dump
     def application_data():
@@ -41,7 +32,6 @@ def create_app():
                 "git_repo": "https://github.com/harvard-lts/hdc3a-transfer-service",
                 "version": os.getenv('VERSION', "Not Supplied")}
 
-    health.add_check(checktransfermqconnection)
     health.add_section("application", application_data)
 
     envdump.add_section("application", application_data)
@@ -50,10 +40,7 @@ def create_app():
     app.add_url_rule("/healthcheck", "healthcheck", view_func=health.run)
     app.add_url_rule("/environment", "environment", view_func=envdump.run)
 
-    # Initializing queue listener
-    logging.getLogger('transfer-service').debug("Creating Transfer Ready queue listener...")
-    TransferReadyQueueListener()
-
+    
     return app
 
 

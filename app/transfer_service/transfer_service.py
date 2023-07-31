@@ -1,10 +1,13 @@
 import boto3, os, os.path, logging, zipfile, glob
-from transfer_service_mqresources import mqutils
 from botocore.exceptions import ClientError
 import transfer_service.transfer_ready_validation as transfer_ready_validation
 from transfer_service.transferexception import TransferException 
 from transfer_service.transferexception import ValidationException 
 import transfer_service.transfer_validation as transfer_validation 
+from celery import Celery
+
+app = Celery()
+app.config_from_object('celeryconfig')
 
 logger = logging.getLogger('transfer-service')
 def transfer_data(message_data):
@@ -71,9 +74,20 @@ def transfer_data(message_data):
 #             logging.exception("Transfer Validation Failed with Exception {}".format(str(e)))
 #             raise e
 
-    #Notify transfer success
-    transfer_status = mqutils.TransferStatus(message_data["package_id"], "success", dest_path)
-    mqutils.notify_transfer_status_message(transfer_status)
+    package_id = message_data["package_id"]
+    transfer_status_task = os.getenv('TRANSFER_STATUS_TASK_NAME', 'dims.tasks.handle_transfer_status')
+    msg_json = {
+        "package_id": package_id,
+        "transfer_status": "success",
+        "destination_path": dest_path,
+        "admin_metadata": {
+            "original_queue": os.getenv("TRANSFER_PUBLISH_QUEUE_NAME"),
+            "task_name": transfer_status_task,
+            "retry_count": 0
+        }
+    }
+    app.send_task(transfer_status_task, args=[msg_json], kwargs={},
+            queue=os.getenv("TRANSFER_PUBLISH_QUEUE_NAME")) 
             
     #Cleanup s3
     cleanup_s3(s3, s3_bucket_name, s3_path)
