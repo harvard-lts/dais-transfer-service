@@ -29,6 +29,7 @@ default_queue = Queue(
     queue_arguments=dead_letter_queue_option)
  
 task_queues = [default_queue]
+
 task_routes = {
     'transfer_service.tasks.transfer_data':
         {'queue': os.getenv("TRANSFER_CONSUME_QUEUE_NAME")}

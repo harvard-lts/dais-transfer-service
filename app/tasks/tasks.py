@@ -9,6 +9,7 @@ from transfer_service.transferexception import TransferException
 import logging
 from celery.exceptions import Reject
 
+
 app = Celery()
 app.config_from_object('celeryconfig')
 
@@ -28,6 +29,7 @@ def transfer_data(self, message_body):
             logger.debug("Sending to DLQ")
             send_max_retry_notifications(message_body)
             raise Reject("reject", requeue=False)
+
     logger.debug("Message Body: {}".format(message_body))
     # Do not do the validation and transfer if dry_run is set
     if "dry_run" in message_body:
