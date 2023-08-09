@@ -17,7 +17,7 @@ dead_letter_queue_option = {
     'x-message-ttl': int(os.getenv('MESSAGE_EXPIRATION_MS', 3600000))
 }
 
-# Set the default exchange to the same as the queue name 
+# Set the default exchange to the same as the queue name
 default_exchange = Exchange(os.getenv("TRANSFER_CONSUME_QUEUE_NAME"), type='direct')
 
 # Create the Queue and pass the DLQ options to it
