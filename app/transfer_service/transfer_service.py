@@ -5,7 +5,6 @@ from transfer_service.transferexception import TransferException
 from transfer_service.transferexception import ValidationException 
 import transfer_service.transfer_validation as transfer_validation 
 from celery import Celery
-from kombu import Queue
 
 app = Celery()
 app.config_from_object('celeryconfig')
@@ -87,10 +86,8 @@ def transfer_data(message_data):
             "retry_count": 0
         }
     }
-    transfer_publish_queue = Queue(
-        os.getenv("TRANSFER_PUBLISH_QUEUE_NAME"), no_declare=True)
     app.send_task(transfer_status_task, args=[msg_json], kwargs={},
-            queue=transfer_publish_queue) 
+            queue=os.getenv("TRANSFER_PUBLISH_QUEUE_NAME")) 
             
     #Cleanup s3
     cleanup_s3(s3, s3_bucket_name, s3_path)

@@ -7,8 +7,6 @@ import notifier.notifier as notifier
 from transfer_service.transferexception import ValidationException
 from transfer_service.transferexception import TransferException
 import logging
-from celery.exceptions import Reject
-
 
 app = Celery()
 app.config_from_object('celeryconfig')
@@ -21,15 +19,6 @@ retries = int(os.getenv('MESSAGE_MAX_RETRIES', 3))
 
 @app.task(bind=True, serializer='json', name=transfer_task, max_retries=retries, acks_late=True, autoretry_for=(Exception,))
 def transfer_data(self, message_body):
-    if "dlq_testing" in message_body:
-        if self.request.retries < retries:
-            logger.debug("retrying Transfer Service")
-            self.retry(countdown=3)
-        else:
-            logger.debug("Sending to DLQ")
-            send_max_retry_notifications(message_body)
-            raise Reject("reject", requeue=False)
-
     logger.debug("Message Body: {}".format(message_body))
     # Do not do the validation and transfer if dry_run is set
     if "dry_run" in message_body:
