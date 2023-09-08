@@ -17,7 +17,7 @@ def send_error_notification(subject, body, recipients=None):
         recipients += "," + default_email_recipient
     arguments = {"subject": subject, "body": body,
                  "recipients": recipients}
-    NOTIFIER_TASK_NAME = os.getenv("EMAIL_NOTIFIER_QUEUE_NAME",
+    NOTIFIER_TASK_NAME = os.getenv("EMAIL_NOTIFIER_TASK_NAME",
                                    "rabbitmq-email-notifier." +
                                    "tasks.notify_email_message")
     return app1.send_task(NOTIFIER_TASK_NAME, args=[arguments], kwargs={},
