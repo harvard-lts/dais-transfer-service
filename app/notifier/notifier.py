@@ -1,13 +1,15 @@
 from celery import Celery
-import os, logging
+import os
+import logging
 
 app1 = Celery()
 app1.config_from_object('celeryconfig')
 
+
 def send_error_notification(subject, body, recipients=None):
     logging.getLogger('transfer-service').error(body)
-    queue = os.getenv("EMAIL_QUEUE_NAME")
-    subject = "DAIS Transfer Service: " + subject   
+    queue = os.getenv("EMAIL_NOTIFIER_QUEUE_NAME")
+    subject = "DAIS Transfer Service: " + subject
     default_email_recipient = os.getenv("DEFAULT_EMAIL_RECIPIENT")
     if recipients is None:
         recipients = default_email_recipient
@@ -19,4 +21,4 @@ def send_error_notification(subject, body, recipients=None):
                                    "rabbitmq-email-notifier." +
                                    "tasks.notify_email_message")
     return app1.send_task(NOTIFIER_TASK_NAME, args=[arguments], kwargs={},
-                          queue=os.getenv("EMAIL_NOTIFIER_QUEUE_NAME"))
+                          queue=queue)
