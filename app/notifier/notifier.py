@@ -1,5 +1,8 @@
-import mqresources.mqutils as mqutils
+from celery import Celery
 import os, logging
+
+app1 = Celery()
+app1.config_from_object('celeryconfig')
 
 def send_error_notification(subject, body, recipients=None):
     logging.getLogger('transfer-service').error(body)
@@ -10,4 +13,10 @@ def send_error_notification(subject, body, recipients=None):
         recipients = default_email_recipient
     else:
         recipients += "," + default_email_recipient
-    return mqutils.notify_email_message(subject, body, recipients, queue)
+    arguments = {"subject": subject, "body": body,
+                 "recipients": recipients}
+    NOTIFIER_TASK_NAME = os.getenv("EMAIL_NOTIFIER_QUEUE_NAME",
+                                   "rabbitmq-email-notifier." +
+                                   "tasks.notify_email_message")
+    return app1.send_task(NOTIFIER_TASK_NAME, args=[arguments], kwargs={},
+                          queue=os.getenv("EMAIL_NOTIFIER_QUEUE_NAME"))
