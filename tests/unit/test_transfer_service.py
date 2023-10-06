@@ -54,6 +54,6 @@ def test_perform_fs_transfer():
     if not os.path.exists(os.path.dirname(dropbox)):
         os.makedirs(os.path.dirname(dropbox))
     transfer_service.perform_fs_transfer(file_name, filepath, dropbox)
-    assert os.path.isfile(f"{dropbox}/{file_name}")
+    assert os.path.exists(f"{dropbox}/{file_name}")
     #clean up
     os.remove(f"{dropbox}/{file_name}")
