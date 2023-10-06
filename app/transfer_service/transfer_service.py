@@ -1,4 +1,5 @@
-import boto3, os, os.path, logging, zipfile, glob, shutil
+import boto3, os, os.path, logging, zipfile, glob
+import shutil
 from botocore.exceptions import ClientError
 import transfer_service.transfer_ready_validation as transfer_ready_validation
 from transfer_service.transferexception import TransferException 
