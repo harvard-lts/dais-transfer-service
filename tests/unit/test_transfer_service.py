@@ -48,8 +48,8 @@ def test_validate_with_no_data():
     cleanup_extraction(os.path.join(data_path, doi_no_data_path, "extracted"))
 
 def test_perform_fs_transfer():
-    file_name = "submission_993578.zip"
-    filepath = f"{data_path}/proquest2023080116-993578-gsd"
+    file_name = "submission-test.zip"
+    filepath = f"{data_path}/proquest-test"
     dropbox = f"{data_path}/dropbox"
     if not os.path.exists(os.path.dirname(dropbox)):
         os.makedirs(os.path.dirname(dropbox))
