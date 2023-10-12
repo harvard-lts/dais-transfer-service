@@ -19,8 +19,10 @@ RUN apt-get update && apt-get install -y libpq-dev gcc python-dev supervisor ngi
   pip install --upgrade --force-reinstall -r /tmp/requirements.txt -i https://pypi.org/simple/ --extra-index-url https://test.pypi.org/simple/ &&\
   groupadd -r -g 55020 appuser && \
   groupadd -r -g 4177 epadd_secure && \
+  groupadd -r -g 55031 etdadm && \
   useradd -u 55020 -g 55020 --create-home appuser && \
   usermod -a -G 4177 appuser
+  usermod -a -G 55031 appuser
 
 # Supervisor to run and manage multiple apps in the same container
 ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
