@@ -20,6 +20,10 @@
 			"type": "string",
 			"description": "The path (prefix) of the data"
 		},
+		"fs_source_path": {
+			"type": "string",
+			"description": "The FS path of the data"
+		},
 		"destination_path": {
 			"type": "string",
 			"description": "The destination path for the data"
@@ -45,8 +49,6 @@
 	"required": [
 		"package_id",
 		"application_name",
-		"s3_bucket_name",
-		"s3_path",
 		"destination_path",
 		"admin_metadata"
 	]
