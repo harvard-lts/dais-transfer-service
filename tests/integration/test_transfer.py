@@ -4,6 +4,7 @@ import transfer_service.transfer_service as transfer_service
 import transfer_helper
 from transfer_service.transferexception import TransferException
 import transfer_service.transfer_validation as transfer_validation
+import shutil
 from botocore.client import ClientError
 
 logging.basicConfig(format='%(message)s')
@@ -64,7 +65,24 @@ def test_perform_epadd_transfer():
     #cleanup the data that was moved to the dropbox
     transfer_helper.cleanup_dropbox(dest_path)
 
-     
+
+def test_perform_fs_transfer():
+    file_name = "submission-test.zip"
+    sample_data_path = os.path.join("/home/appuser/tests/data/proquest-test", file_name)
+    etd_storage_dir = "/home/appuser/etd_data/in/proquest_test/"
+    if not os.path.exists(os.path.dirname(etd_storage_dir)):
+        os.makedirs(os.path.dirname(etd_storage_dir))
+    etd_storage_path = os.path.join(etd_storage_dir, file_name)
+    shutil.copyfile(sample_data_path, etd_storage_path)
+    dropbox_path="/home/appuser/local/dropbox"
+    dest_path = os.path.join(dropbox_path, "proquest-test")
+    transfer_service.perform_fs_transfer(file_name, etd_storage_dir, dest_path)
+    assert os.path.exists(f"{dest_path}/{file_name}")
+    #clean up
+    os.remove(etd_storage_path)
+    transfer_helper.cleanup_dropbox(dest_path)
+
+
 def test_dvn_cleanup_s3():
     '''Tests to make sure the s3 cleanup method works'''
     #Upload the data to s3 to test the dropbox transfer

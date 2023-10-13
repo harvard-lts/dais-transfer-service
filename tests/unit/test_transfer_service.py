@@ -46,3 +46,14 @@ def test_validate_with_no_data():
     assert transfer_validation.validate_transfer(zipextractionpath, os.path.join(data_path, doi_no_data_path))
     
     cleanup_extraction(os.path.join(data_path, doi_no_data_path, "extracted"))
+
+def test_perform_fs_transfer():
+    file_name = "submission-test.zip"
+    filepath = f"{data_path}/proquest-test"
+    dropbox = f"{data_path}/dropbox"
+    if not os.path.exists(os.path.dirname(dropbox)):
+        os.makedirs(os.path.dirname(dropbox))
+    transfer_service.perform_fs_transfer(file_name, filepath, dropbox)
+    assert os.path.exists(f"{dropbox}/{file_name}")
+    #clean up
+    os.remove(f"{dropbox}/{file_name}")

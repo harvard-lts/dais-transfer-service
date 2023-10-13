@@ -1,11 +1,11 @@
 import boto3, os, os.path, logging, zipfile, glob
+import shutil
 from botocore.exceptions import ClientError
 import transfer_service.transfer_ready_validation as transfer_ready_validation
 from transfer_service.transferexception import TransferException 
 from transfer_service.transferexception import ValidationException 
 import transfer_service.transfer_validation as transfer_validation 
 from celery import Celery
-from kombu import Queue
 
 app = Celery()
 app.config_from_object('celeryconfig')
@@ -87,10 +87,8 @@ def transfer_data(message_data):
             "retry_count": 0
         }
     }
-    transfer_publish_queue = Queue(
-        os.getenv("TRANSFER_PUBLISH_QUEUE_NAME"), no_declare=True)
     app.send_task(transfer_status_task, args=[msg_json], kwargs={},
-            queue=transfer_publish_queue) 
+            queue=os.getenv("TRANSFER_PUBLISH_QUEUE_NAME")) 
             
     #Cleanup s3
     cleanup_s3(s3, s3_bucket_name, s3_path)
@@ -131,7 +129,26 @@ def perform_transfer(s3, s3_bucket_name, s3_path, dropbox_dir):
             continue
         logger.debug("Downloading {} to {}".format(obj.key, target))
         bucket.download_file(obj.key, target)
-        
+
+       
+def perform_fs_transfer(file_name, file_path, dropbox_dir):
+    """
+    Copy the contents of a folder directory
+    Args:
+        file_name: the name of the file
+        s3_path: the folder path in the s3 bucket
+        dropbox_dir: an absolute directory path in the local file system
+    """
+    
+    logger.debug("Transferring {}/{} to {}".format(file_name, file_path, dropbox_dir))
+
+    source = os.path.join(file_path, file_name)    
+    target = os.path.join(dropbox_dir, file_name)
+    if not os.path.exists(os.path.dirname(target)):
+        os.makedirs(os.path.dirname(target))
+    logger.debug("Copying {} to {}".format(source, target))
+    shutil.copy(source, target)
+
 def unzip_transfer(fulldestpath):
     '''Unzips the transferred zipfile'''
 
