@@ -22,7 +22,7 @@ def transfer_data(message_data):
                 aws_access_key_id=os.getenv("DVN_AWS_ACCESS_KEY_ID"),
                 aws_secret_access_key=os.getenv("DVN_AWS_SECRET_ACCESS_KEY"),
                 region_name="us-east-1")
-        else:
+        elif (message_data['application_name'] == "ePADD"):
             # TODO: Make creation of s3_client configurable to make adding non-Amazon S3 implementations more flexible
             # TODO: Refactor code to use only boto client instead of boto3 resource
             # JIRA Ticket: https://jira.huit.harvard.edu/browse/LTSEPADD-28
@@ -52,7 +52,7 @@ def transfer_data(message_data):
         #Transfer
         perform_transfer(s3, s3_bucket_name, s3_path, dest_path)
     elif os.path.exists(fs_source_path): 
-        perform_fs_transfer(os.path.dirname(fs_source_path), os.path.basename(fs_source_path), dest_path)
+        perform_fs_transfer(os.path.basename(fs_source_path), os.path.dirname(fs_source_path), dest_path)
 
     zipextractionpath = ""
     if (application_name == "Dataverse"):
