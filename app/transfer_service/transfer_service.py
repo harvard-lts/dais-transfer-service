@@ -39,13 +39,20 @@ def transfer_data(message_data):
                
     s3_bucket_name = message_data['s3_bucket_name']
     s3_path = message_data['s3_path'] 
+    fs_source_path = message_data['fs_source_path'] 
     dest_path = os.path.join(message_data['destination_path'], message_data['package_id'])
    
-    if not path_exists(s3, s3_bucket_name, s3_path):
-        raise TransferException("The path {} does not exists in bucket {}.".format(s3_path, s3_bucket_name))  
-           
-    #Transfer
-    perform_transfer(s3, s3_bucket_name, s3_path, dest_path)
+    error_message = ""
+    if not path_exists(s3, s3_bucket_name, s3_path) and not os.path.exists(fs_source_path):
+        error_message = "The path {} does not exists in bucket {}.".format(s3_path, s3_bucket_name)
+        error_message += "and The FS path {} does not exist. Either an S3 or FS path must be provided".format(fs_source_path)    
+        raise TransferException(error_message)  
+
+    if path_exists(s3, s3_bucket_name, s3_path):
+        #Transfer
+        perform_transfer(s3, s3_bucket_name, s3_path, dest_path)
+    elif os.path.exists(fs_source_path): 
+        perform_fs_transfer(os.path.dirname(fs_source_path), os.path.basename(fs_source_path), dest_path)
 
     zipextractionpath = ""
     if (application_name == "Dataverse"):
@@ -136,7 +143,7 @@ def perform_fs_transfer(file_name, file_path, dropbox_dir):
     Copy the contents of a folder directory
     Args:
         file_name: the name of the file
-        s3_path: the folder path in the s3 bucket
+        file_path: the folder path in the s3 bucket
         dropbox_dir: an absolute directory path in the local file system
     """
     
