@@ -101,6 +101,8 @@ def transfer_data(message_data):
     cleanup_s3(s3, s3_bucket_name, s3_path)
 
 def path_exists(s3, s3_bucket, s3_path):
+    if not s3_bucket or not s3_path:
+        return False
     try:
         bucket = s3.Bucket(s3_bucket)
         res = bucket.objects.filter(Prefix=s3_path)
