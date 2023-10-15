@@ -100,6 +100,9 @@ def transfer_data(message_data):
     #Cleanup s3
     cleanup_s3(s3, s3_bucket_name, s3_path)
 
+    if ('fs_cleanup' in message_data):
+        cleanup_fs(os.path.dirname(fs_source_path))
+
 def path_exists(s3, s3_bucket, s3_path):
     if not s3_bucket or not s3_path:
         return False
@@ -192,6 +195,10 @@ def cleanup_s3(s3, s3_bucket_name, s3_path):
             raise TransferException("Errors occurred while attempting deletion for {}/{}:\n{}".format(s3_bucket_name, s3_path, resp['Errors']))
     else:
         logger.warn("Prefix {}/{} does not exist".format(s3_bucket_name, s3_path))
-    
+
+def cleanup_fs(fs_path):
+    '''Remove the succesffully transferred data from the source directory'''
+    if os.path.exists(fs_path):
+        shutil.rmtree(fs_path)
         
         
