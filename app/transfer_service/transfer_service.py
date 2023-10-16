@@ -22,7 +22,7 @@ def transfer_data(message_data):
                 aws_access_key_id=os.getenv("DVN_AWS_ACCESS_KEY_ID"),
                 aws_secret_access_key=os.getenv("DVN_AWS_SECRET_ACCESS_KEY"),
                 region_name="us-east-1")
-        else:
+        elif (message_data['application_name'] == "ePADD"):
             # TODO: Make creation of s3_client configurable to make adding non-Amazon S3 implementations more flexible
             # TODO: Refactor code to use only boto client instead of boto3 resource
             # JIRA Ticket: https://jira.huit.harvard.edu/browse/LTSEPADD-28
@@ -39,13 +39,20 @@ def transfer_data(message_data):
                
     s3_bucket_name = message_data['s3_bucket_name']
     s3_path = message_data['s3_path'] 
+    fs_source_path = message_data['fs_source_path'] 
     dest_path = os.path.join(message_data['destination_path'], message_data['package_id'])
    
-    if not path_exists(s3, s3_bucket_name, s3_path):
-        raise TransferException("The path {} does not exists in bucket {}.".format(s3_path, s3_bucket_name))  
-           
-    #Transfer
-    perform_transfer(s3, s3_bucket_name, s3_path, dest_path)
+    error_message = ""
+    if not path_exists(s3, s3_bucket_name, s3_path) and not os.path.exists(fs_source_path):
+        error_message = "The path {} does not exists in bucket {}.".format(s3_path, s3_bucket_name)
+        error_message += "and The FS path {} does not exist. Either an S3 or FS path must be provided".format(fs_source_path)    
+        raise TransferException(error_message)  
+
+    if path_exists(s3, s3_bucket_name, s3_path):
+        #Transfer
+        perform_transfer(s3, s3_bucket_name, s3_path, dest_path)
+    elif os.path.exists(fs_source_path): 
+        perform_fs_transfer(os.path.basename(fs_source_path), os.path.dirname(fs_source_path), dest_path)
 
     zipextractionpath = ""
     if (application_name == "Dataverse"):
@@ -94,6 +101,8 @@ def transfer_data(message_data):
     cleanup_s3(s3, s3_bucket_name, s3_path)
 
 def path_exists(s3, s3_bucket, s3_path):
+    if not s3_bucket or not s3_path:
+        return False
     try:
         bucket = s3.Bucket(s3_bucket)
         res = bucket.objects.filter(Prefix=s3_path)
@@ -136,7 +145,7 @@ def perform_fs_transfer(file_name, file_path, dropbox_dir):
     Copy the contents of a folder directory
     Args:
         file_name: the name of the file
-        s3_path: the folder path in the s3 bucket
+        file_path: the folder path in the s3 bucket
         dropbox_dir: an absolute directory path in the local file system
     """
     
@@ -182,7 +191,4 @@ def cleanup_s3(s3, s3_bucket_name, s3_path):
         if ('Errors' in resp[0]):
             raise TransferException("Errors occurred while attempting deletion for {}/{}:\n{}".format(s3_bucket_name, s3_path, resp['Errors']))
     else:
-        logger.warn("Prefix {}/{} does not exist".format(s3_bucket_name, s3_path))
-    
-        
-        
+        logger.warn("Prefix {}/{} does not exist".format(s3_bucket_name, s3_path))     

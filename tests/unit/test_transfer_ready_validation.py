@@ -9,6 +9,7 @@ def test_valid_json():
         "application_name": "Dataverse",
         "s3_path": "/path/to/data",
         "s3_bucket_name": "dataverse-export-dev",
+        "fs_source_path": "",
         "destination_path": "/home/appuser/dropbox",
         "admin_metadata": {"original_queue": "myqueue", "retry_count":0}
     }
@@ -25,6 +26,7 @@ def test_valid_json_extra_admin_params():
         "application_name": "Dataverse",
         "s3_path": "/path/to/data",
         "s3_bucket_name": "dataverse-export-dev",
+        "fs_source_path": "",
         "destination_path": "/home/appuser/dropbox",
         "admin_metadata": {"original_queue": "myqueue", "retry_count":0, "extra_admin_param": "should be valid"}
     }

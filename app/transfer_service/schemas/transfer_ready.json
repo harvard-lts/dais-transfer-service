@@ -47,6 +47,7 @@
 		"application_name",
 		"s3_bucket_name",
 		"s3_path",
+		"fs_source_path",
 		"destination_path",
 		"admin_metadata"
 	]
