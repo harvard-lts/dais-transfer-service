@@ -13,7 +13,7 @@ services:
     volumes:
       # App
       - './:/home/appuser'
-      - './etd_data:/home/appuser/etd_data'
+      - './etd_data:/home/etdadm/data'
       # Logs
       - './logs:/home/appuser/logs'
     env_file:

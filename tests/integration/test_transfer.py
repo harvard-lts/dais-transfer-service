@@ -69,7 +69,7 @@ def test_perform_epadd_transfer():
 def test_perform_fs_transfer():
     file_name = "submission-test.zip"
     sample_data_path = os.path.join("/home/appuser/tests/data/proquest-test", file_name)
-    etd_storage_dir = "/home/appuser/etd_data/in/proquest_test/"
+    etd_storage_dir = "/home/etdadm/data/in/proquest_test/"
     if not os.path.exists(os.path.dirname(etd_storage_dir)):
         os.makedirs(os.path.dirname(etd_storage_dir))
     etd_storage_path = os.path.join(etd_storage_dir, file_name)
