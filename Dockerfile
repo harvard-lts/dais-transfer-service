@@ -24,7 +24,8 @@ RUN apt-get update && apt-get install -y libpq-dev gcc python-dev supervisor ngi
   useradd -u 55020 -g 55020 --create-home appuser && \
   usermod -a -G 4177 appuser && \
   usermod -a -G 1636 appuser && \
-  usermod -a -G 55031 appuser
+  usermod -a -G 55031 appuser && \
+  usermod -a -G 4000 guestftp
 
 # Supervisor to run and manage multiple apps in the same container
 ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
