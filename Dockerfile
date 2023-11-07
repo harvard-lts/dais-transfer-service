@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y libpq-dev gcc python-dev supervisor ngi
   groupadd -r -g 4177 epadd_secure && \
   groupadd -r -g 55031 etdadm && \
   groupadd -r -g 1636 appcommon && \
+  groupadd -r -g 4000 guestftp && \
   useradd -u 55020 -g 55020 --create-home appuser && \
   usermod -a -G 4177 appuser && \
   usermod -a -G 1636 appuser && \
